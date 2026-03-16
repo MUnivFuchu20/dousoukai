@@ -411,13 +411,28 @@ var GAS_URL = 'https://script.google.com/macros/s/AKfycbzZO0dTZ6ucm3MAMRVXCEyrnN
 //  GAS API 呼び出しヘルパー
 // ============================================================
 function gasApi(action, params) {
-  var url = GAS_URL + '?action=' + action;
-  if (params) {
-    Object.keys(params).forEach(function(k) {
-      url += '&' + k + '=' + encodeURIComponent(params[k]);
-    });
-  }
-  return fetch(url).then(function(r) { return r.json(); });
+  return new Promise(function(resolve, reject) {
+    var cbName = 'gasCallback_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    var url = GAS_URL + '?action=' + action + '&callback=' + cbName;
+    if (params) {
+      Object.keys(params).forEach(function(k) {
+        url += '&' + k + '=' + encodeURIComponent(params[k]);
+      });
+    }
+    window[cbName] = function(data) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    var script = document.createElement('script');
+    script.src = url;
+    script.onerror = function() {
+      delete window[cbName];
+      document.body.removeChild(script);
+      reject(new Error('JSONP error'));
+    };
+    document.body.appendChild(script);
+  });
 }
 
 // ============================================================
