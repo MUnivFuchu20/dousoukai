@@ -168,8 +168,8 @@ body {
 .viewer-topbar-left { display:flex;align-items:center;gap:8px; }
 .viewer-topbar-center { display:flex;align-items:center;gap:12px; }
 .viewer-topbar-right { display:flex;align-items:center;gap:8px; }
-.viewer-pic-wrap { flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px; }
-.viewer-pic-wrap img { max-width:100%;max-height:100%;object-fit:contain;display:block;border-radius:4px; }
+.viewer-pic-wrap { flex:1;overflow:hidden; }
+.viewer-pic-wrap img { width:100%;height:100%;object-fit:cover;display:block; }
 .nav-btn { background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 .nav-btn:hover { background:rgba(45,89,134,0.4);border-color:var(--gold); }
 .nav-btn:disabled { opacity:0.25;pointer-events:none; }
