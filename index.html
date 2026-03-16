@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>宮崎大学附属中学校 第20回卒 同窓会</title>
+<style>
+/* ============================================================
+   カラーテーマ：葵色・紺色系
+   ============================================================ */
+:root {
+  --navy:      #1a2744;
+  --navy-mid:  #243258;
+  --aoi:       #2d5986;
+  --aoi-light: #3a7abf;
+  --gold:      #c9a84c;
+  --white:     #f8f7f4;
+  --radius:    12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',Georgia,serif;
+  background: var(--navy); color: var(--white);
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+
+/* ヘッダー */
+#site-header {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.site-title { color: var(--gold); font-size: 14px; letter-spacing: 0.06em; line-height: 1.4; }
+.site-title small { display: block; color: rgba(201,168,76,0.6); font-size: 10px; font-family: 'Hiragino Sans','Meiryo',sans-serif; }
+
+/* メイン */
+#main { flex: 1; }
+.page { display: none; }
+
+/* ===== ローディングオーバーレイ ===== */
+#overlay-init {
+  position: fixed; inset: 0; background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; transition: opacity 0.4s;
+}
+#overlay-init.hide { opacity: 0; pointer-events: none; }
+.overlay-inner { text-align: center; }
+.dot-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+.dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+.overlay-inner p { color: rgba(201,168,76,0.7); font-size: 12px; letter-spacing: 0.1em; font-family: 'Hiragino Sans','Meiryo',sans-serif; }
+
+/* ===== ログイン画面 ===== */
+#page-login {
+  min-height: calc(100vh - 56px);
+  display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+  background: radial-gradient(ellipse at 20% 50%,rgba(45,89,134,0.35) 0%,transparent 60%),
+              radial-gradient(ellipse at 80% 20%,rgba(26,39,68,0.8) 0%,transparent 55%),
+              var(--navy);
+}
+.login-card {
+  width: 100%; max-width: 400px;
+  background: rgba(248,247,244,0.04); border: 1px solid rgba(201,168,76,0.22);
+  border-radius: 20px; padding: 48px 40px 40px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+  animation: fadeUp 0.6s ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.crest-icon { width:56px;height:56px;margin:0 auto 12px;border:1px solid rgba(201,168,76,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gold);background:rgba(201,168,76,0.06); }
+.login-crest { text-align:center;margin-bottom:28px; }
+.login-crest h1 { color:var(--white);font-size:16px;font-weight:400;letter-spacing:0.1em;line-height:1.6; }
+.login-crest p { color:var(--gold);font-size:13px;letter-spacing:0.08em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.login-divider { height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,0.3),transparent);margin:24px 0; }
+.login-note { color:rgba(248,247,244,0.55);font-size:12px;text-align:center;margin-bottom:20px;font-family:'Hiragino Sans','Meiryo',sans-serif;line-height:1.6; }
+.login-form label { display:block;color:var(--gold);font-size:12px;letter-spacing:0.08em;margin-bottom:6px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.login-form input[type="password"] { width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:var(--white);font-size:18px;padding:12px 16px;letter-spacing:0.15em;outline:none;transition:border-color 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.login-form input[type="password"]:focus { border-color:var(--gold); }
+.login-error { color:#e07070;font-size:12px;margin-top:8px;min-height:18px;font-family:'Hiragino Sans','Meiryo',sans-serif;display:none; }
+.btn-login { width:100%;margin-top:20px;background:linear-gradient(135deg,var(--aoi) 0%,var(--navy-mid) 100%);border:1px solid rgba(201,168,76,0.4);border-radius:10px;color:var(--white);font-size:15px;letter-spacing:0.12em;padding:14px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.btn-login:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
+.btn-login.busy { opacity:0.6;pointer-events:none; }
+
+/* ===== トップページ ===== */
+.top-hero { position:relative;height:320px;background:var(--navy-mid);overflow:hidden;display:flex;align-items:flex-end; }
+@media(max-width:600px){.top-hero{height:220px}}
+.top-hero-bg { position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.75) saturate(1.0);transition:opacity 0.8s;opacity:0; }
+.top-hero-bg.show { opacity:1; }
+.top-hero-overlay { position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(26,39,68,0.3) 80%,var(--navy) 100%); }
+.top-hero-text { position:relative;z-index:2;padding:0 32px 28px;width:100%; }
+.top-hero-text h2 { color:var(--white);font-size:clamp(18px,4vw,26px);font-weight:400;letter-spacing:0.12em;line-height:1.5;text-shadow:0 2px 12px rgba(0,0,0,0.5); }
+.top-hero-text p { color:var(--gold);font-size:clamp(12px,2.5vw,14px);letter-spacing:0.1em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.5); }
+.top-content { background:var(--navy);padding:0 0 48px; }
+.top-section { max-width:720px;margin:0 auto;padding:32px 24px 0; }
+.section-title { color:var(--gold);font-size:13px;letter-spacing:0.18em;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:14px;display:flex;align-items:center;gap:10px; }
+.section-title::after { content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(201,168,76,0.35),transparent); }
+.top-about-text { color:rgba(248,247,244,0.82);font-size:14px;line-height:2;letter-spacing:0.04em;white-space:pre-wrap;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.school-song-banner { display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(45,89,134,0.4),rgba(26,39,68,0.6));border:1px solid rgba(201,168,76,0.25);border-radius:var(--radius);padding:18px 22px;cursor:pointer;transition:all 0.2s;width:100%; }
+.school-song-banner:hover { border-color:var(--gold); }
+.song-left { display:flex;align-items:center;gap:14px; }
+.song-icon { width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--gold);flex-shrink:0; }
+.song-label { color:var(--white);font-size:14px;letter-spacing:0.06em; }
+.song-sub { color:rgba(248,247,244,0.5);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-top:2px; }
+.song-arrow { color:var(--gold);font-size:18px;opacity:0.7; }
+.kaisai-list { display:flex;flex-direction:column;gap:10px; }
+.kaisai-btn { display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all 0.2s;color:var(--white);font-size:14px;letter-spacing:0.06em;text-align:left;width:100%;font-family:'Hiragino Mincho ProN','Yu Mincho',serif; }
+.kaisai-btn:hover { background:rgba(45,89,134,0.35);border-color:var(--gold);transform:translateX(3px); }
+.kaisai-btn .btn-arrow { color:var(--gold);font-size:16px;flex-shrink:0;margin-left:12px; }
+.kaisai-empty { color:rgba(248,247,244,0.4);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:12px 0; }
+.next-kaisai-box { background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:20px 22px; }
+.next-kaisai-box p { color:rgba(248,247,244,0.75);font-size:14px;line-height:1.9;white-space:pre-wrap;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.feedback-btn { display:block;width:100%;background:none;border:1px solid rgba(201,168,76,0.35);border-radius:var(--radius);color:var(--gold);font-size:14px;letter-spacing:0.12em;padding:16px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif;text-align:center; }
+.feedback-btn:hover { background:rgba(201,168,76,0.08);border-color:var(--gold); }
+.section-divider { height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,0.15),transparent);margin:32px auto 0;max-width:720px; }
+
+/* ===== 校歌ページ ===== */
+.song-page { max-width:800px;margin:0 auto;padding:32px 24px 48px; }
+.back-btn { display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(201,168,76,0.35);color:var(--gold);font-size:13px;letter-spacing:0.08em;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:'Hiragino Sans','Meiryo',sans-serif;transition:all 0.2s;margin-bottom:28px; }
+.back-btn:hover { background:rgba(201,168,76,0.08);border-color:var(--gold); }
+.song-header { text-align:center;margin-bottom:32px; }
+.song-header h2 { color:var(--white);font-size:22px;font-weight:400;letter-spacing:0.15em;margin-bottom:10px; }
+.song-credits { color:rgba(248,247,244,0.55);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;letter-spacing:0.08em;line-height:2; }
+.music-player { background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:16px;padding:24px 28px;margin-bottom:36px; }
+.player-controls { display:flex;align-items:center;gap:16px;margin-bottom:14px; }
+.play-btn { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--aoi),var(--navy-mid));border:1px solid rgba(201,168,76,0.4);color:var(--gold);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;flex-shrink:0; }
+.play-btn:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
+.player-info { flex:1;min-width:0; }
+.player-title { color:var(--white);font-size:14px;letter-spacing:0.06em;margin-bottom:2px; }
+.player-time { color:rgba(248,247,244,0.45);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.progress-wrap { position:relative;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;cursor:pointer;margin-top:12px; }
+.progress-bar { height:100%;background:linear-gradient(to right,var(--aoi-light),var(--gold));border-radius:3px;width:0%; }
+.player-status { color:rgba(248,247,244,0.4);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-top:8px;min-height:16px;text-align:center; }
+.lyrics-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:20px; }
+@media(max-width:640px){.lyrics-grid{grid-template-columns:1fr}}
+.lyrics-block { background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:var(--radius);padding:20px 18px; }
+.verse-num { color:var(--gold);font-size:12px;letter-spacing:0.15em;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.15); }
+.lyrics-block p { color:rgba(248,247,244,0.82);font-size:14px;line-height:2.4;letter-spacing:0.06em; }
+
+/* ===== 同窓会情報・写真共通 ===== */
+.sub-page { max-width:800px;margin:0 auto;padding:32px 24px 48px; }
+.page-title { color:var(--white);font-size:20px;font-weight:400;letter-spacing:0.1em;margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid rgba(201,168,76,0.2); }
+.greeting-box { background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:var(--radius);padding:22px 24px;margin-bottom:28px; }
+.greeting-box p { color:rgba(248,247,244,0.82);font-size:14px;line-height:2;white-space:pre-wrap;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.photo-folder-list { display:flex;flex-direction:column;gap:10px; }
+.folder-btn { display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all 0.2s;color:var(--white);font-size:14px;letter-spacing:0.06em;text-align:left;width:100%;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.folder-btn:hover { background:rgba(45,89,134,0.35);border-color:var(--gold);transform:translateX(3px); }
+.folder-btn .btn-arrow { color:var(--gold);font-size:16px;flex-shrink:0;margin-left:12px; }
+.folder-icon { margin-right:10px;opacity:0.7; }
+.photos-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px; }
+@media(max-width:480px){.photos-grid{grid-template-columns:1fr}}
+.photo-thumb { position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:8px;cursor:pointer;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.1);transition:all 0.2s; }
+.photo-thumb:hover { border-color:var(--gold);transform:scale(1.02); }
+.photo-count { color:rgba(248,247,244,0.5);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:14px; }
+.wait-spin { color:rgba(201,168,76,0.6);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:40px;text-align:center; }
+
+/* ===== 写真拡大ビューア ===== */
+#page-photo { background:rgba(10,15,30,0.97); }
+.photo-viewer { display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - 56px);padding:20px 16px 40px; }
+.viewer-controls { display:flex;align-items:center;gap:12px;margin-bottom:20px;width:100%;max-width:800px; }
+.viewer-pic-wrap { width:100%;max-width:800px;display:flex;align-items:center;justify-content:center; }
+.viewer-pic-wrap img { max-width:100%;max-height:70vh;border-radius:8px;object-fit:contain;display:block; }
+.viewer-nav { display:flex;align-items:center;justify-content:center;gap:20px;margin-top:16px; }
+.nav-btn { background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center; }
+.nav-btn:hover { background:rgba(45,89,134,0.4);border-color:var(--gold); }
+.nav-btn:disabled { opacity:0.25;pointer-events:none; }
+.viewer-counter { color:rgba(248,247,244,0.55);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;min-width:80px;text-align:center; }
+.viewer-filename { color:rgba(248,247,244,0.4);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-top:8px; }
+
+/* ===== ご感想投稿ページ ===== */
+.feedback-page { max-width:600px;margin:0 auto;padding:32px 24px 48px; }
+.form-group { margin-bottom:20px; }
+.form-group label { display:block;color:var(--gold);font-size:12px;letter-spacing:0.08em;margin-bottom:6px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.form-group label span { color:#e07070;margin-left:4px; }
+.form-group select, .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"], .form-group textarea {
+  width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:var(--white);font-size:14px;padding:10px 14px;outline:none;font-family:'Hiragino Sans','Meiryo',sans-serif;
+}
+.form-group select { cursor:pointer; }
+.form-group textarea { min-height:120px;resize:vertical;line-height:1.8; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--gold); }
+.disclose-row { display:flex;gap:20px;align-items:center; }
+.disclose-row label { color:rgba(248,247,244,0.8);font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer; }
+.disclose-row input[type="radio"] { accent-color:var(--gold); }
+.btn-submit { width:100%;margin-top:8px;background:linear-gradient(135deg,var(--aoi),var(--navy-mid));border:1px solid rgba(201,168,76,0.4);border-radius:10px;color:var(--white);font-size:15px;letter-spacing:0.12em;padding:14px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.btn-submit:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
+.form-note { color:rgba(248,247,244,0.45);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-top:12px;text-align:center;line-height:1.8; }
+
+/* フッター */
+#site-footer { background:var(--navy);border-top:1px solid rgba(201,168,76,0.18);padding:16px 24px;text-align:center;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+#site-footer p { color:rgba(248,247,244,0.5);font-size:12px;line-height:1.8; }
+#site-footer a { color:rgba(201,168,76,0.7);text-decoration:none; }
+</style>
+</head>
+<body>
+
+<!-- ローディング -->
+<div id="overlay-init">
+  <div class="overlay-inner">
+    <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <p>読み込み中...</p>
+  </div>
+</div>
+
+<!-- ヘッダー -->
+<header id="site-header">
+  <div class="site-title">
+    宮崎大学附属中学校 第20回卒 同窓会
+    <small>同窓生専用ページ</small>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ① ログイン画面 -->
+  <div id="page-login" class="page">
+    <div style="min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:40px 20px;background:radial-gradient(ellipse at 20% 50%,rgba(45,89,134,0.35) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(26,39,68,0.8) 0%,transparent 55%),var(--navy)">
+      <div class="login-card">
+        <div class="login-crest">
+          <div class="crest-icon">◈</div>
+          <h1>宮崎大学附属中学校<br>第20回卒　同窓会</h1>
+          <p>同窓生専用ページ</p>
+        </div>
+        <div class="login-divider"></div>
+        <p class="login-note">本ページは同窓生のみご覧いただけます。<br>パスワードを入力してください。</p>
+        <div class="login-form">
+          <label for="pw-input">パスワード</label>
+          <input type="password" id="pw-input" placeholder="パスワードを入力"
+                 onkeydown="if(event.key==='Enter') doLogin()">
+          <div class="login-error" id="login-error"></div>
+          <button class="btn-login" id="btn-login" onclick="doLogin()">同窓会HPへ進む</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② トップページ -->
+  <div id="page-top" class="page">
+    <div class="top-hero">
+      <div class="top-hero-bg" id="hero-bg"></div>
+      <div class="top-hero-overlay"></div>
+      <div class="top-hero-text">
+        <h2>宮崎大学附属中学校<br>第20回卒　同窓会</h2>
+        <p>Miyazaki University Affiliated Junior High School — Alumni</p>
+      </div>
+    </div>
+    <div class="top-content">
+      <div class="top-section">
+        <div class="section-title">本ホームページについて</div>
+        <div class="top-about-text" id="about-text">読み込み中...</div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
+        <div class="section-title">校歌</div>
+        <button class="school-song-banner" onclick="showPage('song'); initSongPage();">
+          <div class="song-left">
+            <div class="song-icon">♪</div>
+            <div>
+              <div class="song-label">懐かしい校歌を聴いてみよう！</div>
+              <div class="song-sub">宮崎大学附属中学校 校歌</div>
+            </div>
+          </div>
+          <span class="song-arrow">›</span>
+        </button>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
+        <div class="section-title">各開催同窓会情報</div>
+        <div class="kaisai-list" id="kaisai-list"><div class="kaisai-empty">読み込み中...</div></div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
+        <div class="section-title">次回同窓会のご案内</div>
+        <div class="next-kaisai-box"><p id="next-kaisai-text">読み込み中...</p></div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
+        <div class="section-title">ご感想等</div>
+        <button class="feedback-btn" onclick="showPage('feedback')">✉ ご感想投稿</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 校歌ページ -->
+  <div id="page-song" class="page">
+    <div class="song-page">
+      <button class="back-btn" onclick="showPage('top')">◀ トップ画面へ戻る</button>
+      <div class="song-header">
+        <h2>校　歌</h2>
+        <div class="song-credits">作詞：長嶺 宏<br>作曲：海老原 直</div>
+      </div>
+      <div class="music-player">
+        <div class="player-controls">
+          <button class="play-btn" id="play-btn" onclick="togglePlay()">
+            <span class="play-icon" id="play-icon">▶</span>
+          </button>
+          <div class="player-info">
+            <div class="player-title">宮崎大学附属中学校 校歌</div>
+            <div class="player-time" id="player-time">--:-- / --:--</div>
+          </div>
+        </div>
+        <div class="progress-wrap" id="progress-wrap" onclick="seekAudio(event)">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="player-status" id="player-status">読み込み中...</div>
+      </div>
+      <div class="lyrics-grid" id="lyrics-grid"></div>
+    </div>
+  </div>
+
+  <!-- ④ 各開催同窓会情報ページ -->
+  <div id="page-kaisai" class="page">
+    <div class="sub-page">
+      <button class="back-btn" onclick="showPage('top')">◀ トップ画面へ戻る</button>
+      <div class="page-title" id="kaisai-page-title">同窓会情報</div>
+      <div class="section-title">実行委員長挨拶</div>
+      <div class="greeting-box"><p id="kaisai-greeting">読み込み中...</p></div>
+      <div class="section-title">写真・動画</div>
+      <div class="photo-folder-list" id="photo-folder-list"><div class="wait-spin">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- ⑤ 写真一覧ページ -->
+  <div id="page-photos" class="page">
+    <div class="sub-page">
+      <button class="back-btn" onclick="showPage('kaisai')">◀ 戻る</button>
+      <div class="page-title" id="photos-page-title">写真一覧</div>
+      <div class="photo-count" id="photos-count"></div>
+      <div class="photos-grid" id="photos-grid"><div class="wait-spin">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- ⑥ 写真拡大ページ -->
+  <div id="page-photo" class="page">
+    <div class="photo-viewer">
+      <div class="viewer-controls">
+        <button class="back-btn" onclick="showPage('photos')">◀ 一覧へ戻る</button>
+      </div>
+      <div class="viewer-pic-wrap">
+        <img id="viewer-pic" src="" alt="">
+      </div>
+      <div class="viewer-nav">
+        <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
+        <span class="viewer-counter" id="viewer-counter">- / -</span>
+        <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
+      </div>
+      <div class="viewer-filename" id="viewer-filename"></div>
+    </div>
+  </div>
+
+  <!-- ⑦ ご感想投稿ページ -->
+  <div id="page-feedback" class="page">
+    <div class="feedback-page">
+      <button class="back-btn" onclick="showPage('top')">◀ トップ画面へ戻る</button>
+      <div class="page-title">ご感想投稿</div>
+      <div class="form-group">
+        <label>クラス <span>*</span></label>
+        <select id="fb-class">
+          <option value="">選択してください</option>
+          <option value="A">A組</option>
+          <option value="B">B組</option>
+          <option value="C">C組</option>
+          <option value="D">D組</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>氏名 <span>*</span></label>
+        <input type="text" id="fb-name" placeholder="お名前を入力">
+      </div>
+      <div class="form-group">
+        <label>メールアドレス</label>
+        <input type="email" id="fb-email" placeholder="example@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>電話番号</label>
+        <input type="tel" id="fb-phone" placeholder="080-0000-0000">
+      </div>
+      <div class="form-group">
+        <label>感想等 <span>*</span></label>
+        <textarea id="fb-message" placeholder="ご感想をお書きください"></textarea>
+      </div>
+      <div class="form-group">
+        <label>同窓生への開示</label>
+        <div class="disclose-row">
+          <label><input type="radio" name="disclose" value="yes" checked> 可</label>
+          <label><input type="radio" name="disclose" value="no"> 不可</label>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="submitFeedback()">投稿する</button>
+      <p class="form-note" id="fb-result"></p>
+    </div>
+  </div>
+
+</main>
+
+<!-- フッター -->
+<footer id="site-footer">
+  <p id="footer-text">
+    宮崎大学附属中学校 第20回卒 同窓会
+  </p>
+</footer>
+
+<script>
+// ============================================================
+//  GAS API の URL（デプロイ後に設定）
+// ============================================================
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxOlBB_R2P-VdyaUQZnXx-jiw53AiXoQjH2nunaXYXqLJo2A1H9ZjPE1oF6nZtrRKQFmA/exec';
+
+// ============================================================
+//  GAS API 呼び出しヘルパー
+// ============================================================
+function gasApi(action, params) {
+  var url = GAS_URL + '?action=' + action;
+  if (params) {
+    Object.keys(params).forEach(function(k) {
+      url += '&' + k + '=' + encodeURIComponent(params[k]);
+    });
+  }
+  return fetch(url).then(function(r) { return r.json(); });
+}
+
+// ============================================================
+//  ページ管理
+// ============================================================
+var PAGE_IDS = ['login','top','song','kaisai','photos','photo','feedback'];
+function showPage(pageId) {
+  PAGE_IDS.forEach(function(id) {
+    var el = document.getElementById('page-' + id);
+    if (el) el.style.display = 'none';
+  });
+  var target = document.getElementById('page-' + pageId);
+  if (target) target.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+//  認証
+// ============================================================
+var LS_KEY = 'dousoukai_auth_v3';
+
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(LS_KEY);
+  if (saved) {
+    gasApi('verifyToken', {token: saved}).then(function(res) {
+      if (res.ok) {
+        showPage('top');
+        initTopPage();
+      } else {
+        localStorage.removeItem(LS_KEY);
+        showPage('login');
+      }
+      hideOverlay();
+    }).catch(function() {
+      showPage('login');
+      hideOverlay();
+    });
+  } else {
+    showPage('login');
+    hideOverlay();
+  }
+});
+
+function hideOverlay() {
+  setTimeout(function() {
+    document.getElementById('overlay-init').classList.add('hide');
+  }, 300);
+}
+
+function doLogin() {
+  var pw = document.getElementById('pw-input').value.trim();
+  var errEl = document.getElementById('login-error');
+  var btnEl = document.getElementById('btn-login');
+  errEl.style.display = 'none';
+  if (!pw) {
+    errEl.textContent = 'パスワードを入力してください';
+    errEl.style.display = 'block';
+    return;
+  }
+  btnEl.classList.add('busy');
+  btnEl.textContent = '確認中...';
+  gasApi('verify', {pw: pw}).then(function(res) {
+    btnEl.classList.remove('busy');
+    btnEl.textContent = '同窓会HPへ進む';
+    if (res.ok) {
+      localStorage.setItem(LS_KEY, res.ok);
+      showPage('top');
+      initTopPage();
+    } else {
+      errEl.textContent = 'パスワードが正しくありません';
+      errEl.style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }).catch(function() {
+    btnEl.classList.remove('busy');
+    btnEl.textContent = '同窓会HPへ進む';
+    errEl.textContent = 'エラーが発生しました。再度お試しください';
+    errEl.style.display = 'block';
+  });
+}
+
+// ============================================================
+//  トップページ初期化
+// ============================================================
+var topInitialized = false;
+function initTopPage() {
+  if (topInitialized) return;
+  topInitialized = true;
+
+  // ヘッダー背景画像
+  gasApi('headerImage').then(function(res) {
+    if (!res.url) return;
+    var bg = document.getElementById('hero-bg');
+    bg.style.backgroundImage = 'url(' + res.url + ')';
+    bg.classList.add('show');
+  });
+
+  // 本HPについてテキスト
+  gasApi('topText').then(function(res) {
+    document.getElementById('about-text').textContent = res.text || '（未設定）';
+  });
+
+  // 開催同窓会一覧
+  gasApi('kaisaiList').then(function(res) {
+    var c = document.getElementById('kaisai-list');
+    var list = res.list || [];
+    if (list.length === 0) {
+      c.innerHTML = '<div class="kaisai-empty">開催情報が登録されていません</div>';
+      return;
+    }
+    c.innerHTML = list.map(function(name) {
+      return '<button class="kaisai-btn" onclick="openKaisai(' + JSON.stringify(name) + ')">'
+        + '<span>' + name + '</span><span class="btn-arrow">›</span></button>';
+    }).join('');
+  });
+
+  // 次回同窓会のご案内
+  gasApi('nextKaisai').then(function(res) {
+    document.getElementById('next-kaisai-text').textContent = res.text || '次回同窓会開催は未定です。';
+  });
+
+  // フッター情報
+  gasApi('config').then(function(res) {
+    document.getElementById('footer-text').innerHTML =
+      '宮崎大学附属中学校 第20回卒 同窓会<br>' +
+      'お問合せ：<a href="mailto:' + res.contact_email + '">' + res.contact_email + '</a>' +
+      '　電話：' + res.contact_phone;
+  });
+}
+
+// ============================================================
+//  各開催同窓会ページ
+// ============================================================
+var curKaisai = '';
+function openKaisai(folderName) {
+  curKaisai = folderName;
+  document.getElementById('kaisai-page-title').textContent = folderName;
+  document.getElementById('kaisai-greeting').textContent = '読み込み中...';
+  document.getElementById('photo-folder-list').innerHTML = '<div class="wait-spin">読み込み中...</div>';
+  showPage('kaisai');
+  gasApi('kaisaiDetail', {folder: folderName}).then(function(res) {
+    document.getElementById('kaisai-greeting').textContent = res.greeting || '（挨拶文なし）';
+    var list = document.getElementById('photo-folder-list');
+    if (!res.photoFolders || res.photoFolders.length === 0) {
+      list.innerHTML = '<div class="kaisai-empty">写真フォルダがありません</div>';
+      return;
+    }
+    list.innerHTML = res.photoFolders.map(function(name) {
+      return '<button class="folder-btn" onclick="openPhotoFolder(' + JSON.stringify(name) + ')">'
+        + '<span><span class="folder-icon">📁</span>' + name + '</span>'
+        + '<span class="btn-arrow">›</span></button>';
+    }).join('');
+  });
+}
+
+// ============================================================
+//  写真一覧ページ
+// ============================================================
+var curPhotos = [];
+function openPhotoFolder(folderName) {
+  document.getElementById('photos-page-title').textContent = folderName;
+  document.getElementById('photos-count').textContent = '';
+  document.getElementById('photos-grid').innerHTML = '<div class="wait-spin">読み込み中...</div>';
+  showPage('photos');
+  gasApi('photoList', {kaisai: curKaisai, folder: folderName}).then(function(res) {
+    curPhotos = res.photos || [];
+    var grid = document.getElementById('photos-grid');
+    if (curPhotos.length === 0) {
+      grid.innerHTML = '<div class="wait-spin">写真がありません</div>';
+      return;
+    }
+    document.getElementById('photos-count').textContent = curPhotos.length + '枚';
+    grid.innerHTML = curPhotos.map(function(photo, idx) {
+      var st = 'background-image:url(' + photo.thumb + ');background-size:cover;background-position:center;width:100%;height:100%;border-radius:8px;';
+      return '<div class="photo-thumb" onclick="openPhoto(' + idx + ')">'
+        + '<div style="' + st + '"></div></div>';
+    }).join('');
+  });
+}
+
+// ============================================================
+//  写真拡大ビューア
+// ============================================================
+var curPhotoIdx = 0;
+function openPhoto(idx) {
+  curPhotoIdx = idx;
+  updateViewer();
+  showPage('photo');
+}
+function updateViewer() {
+  var p = curPhotos[curPhotoIdx];
+  if (!p) return;
+  var vp = document.getElementById('viewer-pic');
+  vp.src = p.fileUrl;
+  vp.alt = p.fname;
+  document.getElementById('viewer-counter').textContent = (curPhotoIdx + 1) + ' / ' + curPhotos.length;
+  document.getElementById('viewer-filename').textContent = p.fname;
+  document.getElementById('nav-prev').disabled = (curPhotoIdx === 0);
+  document.getElementById('nav-next').disabled = (curPhotoIdx === curPhotos.length - 1);
+}
+function viewerNav(dir) {
+  var next = curPhotoIdx + dir;
+  if (next < 0 || next >= curPhotos.length) return;
+  curPhotoIdx = next;
+  updateViewer();
+}
+
+// ============================================================
+//  校歌プレイヤー
+// ============================================================
+var songAudio = null;
+var songReady = false;
+
+function initSongPage() {
+  // 歌詞表示
+  gasApi('lyrics').then(function(res) {
+    var g = document.getElementById('lyrics-grid');
+    if (!g || !res.lyrics) return;
+    g.innerHTML = res.lyrics.map(function(v) {
+      return '<div class="lyrics-block"><div class="verse-num">' + v.num + '</div>'
+        + '<p>' + v.lines.join('<br>') + '</p></div>';
+    }).join('');
+  });
+  // MP3読み込み
+  if (songReady) return;
+  songReady = true;
+  document.getElementById('player-status').textContent = '取得中...';
+  gasApi('schoolSong').then(function(res) {
+    if (!res.data) {
+      document.getElementById('player-status').textContent = 'MP3なし';
+      return;
+    }
+    songAudio = new Audio();
+    songAudio.addEventListener('canplaythrough', function() {
+      document.getElementById('player-time').textContent = '0:00 / ' + fmtTime(songAudio.duration);
+      document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
+    });
+    songAudio.addEventListener('canplay', function() {
+      document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
+    });
+    songAudio.addEventListener('timeupdate', function() {
+      if (!songAudio.duration) return;
+      document.getElementById('progress-bar').style.width = (songAudio.currentTime / songAudio.duration * 100) + '%';
+      document.getElementById('player-time').textContent = fmtTime(songAudio.currentTime) + ' / ' + fmtTime(songAudio.duration);
+    });
+    songAudio.addEventListener('ended', function() {
+      document.getElementById('play-icon').textContent = '▶';
+      document.getElementById('progress-bar').style.width = '0%';
+      document.getElementById('player-status').textContent = '再生終了';
+    });
+    songAudio.addEventListener('error', function() {
+      document.getElementById('player-status').textContent = '再生エラー';
+    });
+    songAudio.src = res.data;
+    document.getElementById('player-status').textContent =
+      res.data.startsWith('data:') ? '読み込み中...' : '準備完了 — ▶ を押して再生';
+  }).catch(function() {
+    document.getElementById('player-status').textContent = '取得エラー';
+  });
+}
+
+function togglePlay() {
+  if (!songAudio) return;
+  var ic = document.getElementById('play-icon');
+  var st = document.getElementById('player-status');
+  if (songAudio.paused) {
+    songAudio.play();
+    ic.textContent = '⏸'; st.textContent = '再生中...';
+  } else {
+    songAudio.pause();
+    ic.textContent = '▶'; st.textContent = '一時停止中';
+  }
+}
+
+function seekAudio(e) {
+  if (!songAudio || !songAudio.duration) return;
+  var rect = document.getElementById('progress-wrap').getBoundingClientRect();
+  songAudio.currentTime = ((e.clientX - rect.left) / rect.width) * songAudio.duration;
+}
+
+function fmtTime(s) {
+  if (isNaN(s)) return '--:--';
+  var m = Math.floor(s / 60), r = Math.floor(s % 60);
+  return m + ':' + (r < 10 ? '0' : '') + r;
+}
+
+// ============================================================
+//  ご感想投稿
+// ============================================================
+function submitFeedback() {
+  var cls  = document.getElementById('fb-class').value;
+  var name = document.getElementById('fb-name').value.trim();
+  var msg  = document.getElementById('fb-message').value.trim();
+  var result = document.getElementById('fb-result');
+
+  if (!cls || !name || !msg) {
+    result.textContent = '※ クラス・氏名・感想は必須です';
+    result.style.color = '#e07070';
+    return;
+  }
+
+  var disclose = document.querySelector('input[name="disclose"]:checked').value;
+  var data = {
+    cls:      cls,
+    name:     name,
+    email:    document.getElementById('fb-email').value,
+    phone:    document.getElementById('fb-phone').value,
+    message:  msg,
+    disclose: disclose
+  };
+
+  result.textContent = '送信中...';
+  result.style.color = 'rgba(248,247,244,0.5)';
+
+  gasApi('feedback', {data: JSON.stringify(data)}).then(function(res) {
+    if (res.success) {
+      result.textContent = '✓ 送信しました。ありがとうございます！';
+      result.style.color = '#7abf7a';
+      document.getElementById('fb-name').value = '';
+      document.getElementById('fb-message').value = '';
+    } else {
+      result.textContent = '送信エラーが発生しました';
+      result.style.color = '#e07070';
+    }
+  }).catch(function() {
+    result.textContent = '送信エラーが発生しました';
+    result.style.color = '#e07070';
+  });
+}
+</script>
+</body>
+</html>
