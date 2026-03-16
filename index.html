@@ -545,8 +545,8 @@ function initTopPage() {
       return;
     }
     c.innerHTML = list.map(function(name) {
-      return '<button class="kaisai-btn" onclick="openKaisai(' + JSON.stringify(name) + ')">'
-        + '<span>' + name + '</span><span class="btn-arrow">›</span></button>';
+      var esc = name.replace(/'/g, "\\'");
+      return '<button class="kaisai-btn" onclick="openKaisai(\'' + esc + '\')">'        + '<span>' + name + '</span><span class="btn-arrow">›</span></button>';
     }).join('');
   });
 
@@ -582,9 +582,8 @@ function openKaisai(folderName) {
       return;
     }
     list.innerHTML = res.photoFolders.map(function(name) {
-      return '<button class="folder-btn" onclick="openPhotoFolder(' + JSON.stringify(name) + ')">'
-        + '<span><span class="folder-icon">📁</span>' + name + '</span>'
-        + '<span class="btn-arrow">›</span></button>';
+      var ef = name.replace(/'/g, "\'");
+      return '<button class="folder-btn" onclick="openPhotoFolder(\'' + ef + '\')">'        + '<span><span class="folder-icon">📁</span>' + name + '</span>'        + '<span class="btn-arrow">›</span></button>';
     }).join('');
   });
 }
