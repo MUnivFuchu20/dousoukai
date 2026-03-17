@@ -727,8 +727,8 @@ function openPhotoFolder(folderName) {
 var curPhotoIdx = 0;
 function openPhoto(idx) {
   curPhotoIdx = idx;
-  curZoom = 1; panX = 0; panY = 0;
   showPage('photo');
+  resetZoom();
   updateViewer();
   initPan();
 }
@@ -770,7 +770,7 @@ function viewerNav(dir) {
   var next = curPhotoIdx + dir;
   if (next < 0 || next >= curPhotos.length) return;
   curPhotoIdx = next;
-  curZoom = 1; panX = 0; panY = 0;
+  resetZoom();
   updateViewer();
 }
 
@@ -781,17 +781,28 @@ var panX = 0, panY = 0;
 var isDragging = false;
 var dragStartX = 0, dragStartY = 0;
 var panStartX = 0, panStartY = 0;
+var panInitialized = false;
+
+function resetZoom() {
+  curZoom = 1; panX = 0; panY = 0;
+  applyZoom();
+}
 
 function applyZoom() {
   var vp = document.getElementById('viewer-pic');
+  var wrap = document.getElementById('viewer-pic-wrap');
+  if (!vp) return;
   if (curZoom === 1) {
     vp.style.transform = '';
     panX = 0; panY = 0;
+    if (wrap) wrap.style.cursor = 'default';
   } else {
     vp.style.transform = 'scale(' + curZoom + ') translate(' + (panX/curZoom) + 'px,' + (panY/curZoom) + 'px)';
+    if (wrap) wrap.style.cursor = isDragging ? 'grabbing' : 'grab';
   }
   vp.style.transformOrigin = 'center center';
-  document.getElementById('zoom-level').textContent = Math.round(curZoom * 100) + '%';
+  var zl = document.getElementById('zoom-level');
+  if (zl) zl.textContent = Math.round(curZoom * 100) + '%';
 }
 
 function zoomPhoto(dir) {
@@ -802,8 +813,10 @@ function zoomPhoto(dir) {
   applyZoom();
 }
 
-// ドラッグ移動（PC・スマホ共通）
+// ドラッグ移動（PC・スマホ共通）- 1回だけ初期化
 function initPan() {
+  if (panInitialized) return;
+  panInitialized = true;
   var wrap = document.getElementById('viewer-pic-wrap');
   if (!wrap) return;
 
@@ -823,6 +836,7 @@ function initPan() {
     applyZoom();
   });
   window.addEventListener('mouseup', function() {
+    if (!isDragging) return;
     isDragging = false;
     wrap.style.cursor = curZoom > 1 ? 'grab' : 'default';
   });
