@@ -168,7 +168,7 @@ body {
 
 /* ===== 写真拡大ビューア ===== */
 #page-photo { background:#000; }
-.photo-viewer { display:flex;flex-direction:column; }
+.photo-viewer { display:flex;flex-direction:column;min-height:calc(100vh - 56px); }
 .viewer-topbar {
   display:flex;align-items:center;justify-content:space-between;
   padding:8px 16px;flex-shrink:0;
@@ -188,8 +188,10 @@ body {
 .viewer-pic-wrap {
   position:relative;
   width:100%;
+  flex:1;
   overflow:hidden;
   display:flex;align-items:center;justify-content:center;
+  min-height:200px;
 }
 .viewer-bg {
   position:absolute;inset:0;
@@ -725,19 +727,12 @@ function openPhotoFolder(folderName) {
 var curPhotoIdx = 0;
 function openPhoto(idx) {
   curPhotoIdx = idx;
+  showPage('photo');   // 先にページを表示してからDOMを更新
   updateViewer();
-  showPage('photo');
 }
 function updateViewer() {
   var p = curPhotos[curPhotoIdx];
   if (!p) return;
-
-  // 写真表示エリアの高さを動的計算
-  // 全体高さ - サイトヘッダー(56px) - ビューアトップバー(~52px) - フッター(~52px)
-  var wrap = document.getElementById('viewer-pic-wrap');
-  var totalH = window.innerHeight;
-  var usedH = 56 + 52 + 52;
-  wrap.style.height = (totalH - usedH) + 'px';
 
   // 写真表示
   var vp = document.getElementById('viewer-pic');
