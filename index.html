@@ -91,9 +91,11 @@ body {
 .top-hero-bg.show { opacity:1; }
 .top-hero-overlay { position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(26,39,68,0.3) 80%,var(--navy) 100%); }
 .top-hero-text { position:relative;z-index:2;padding:0 24px 24px;width:100%; }
-.top-hero-text-inner { display:inline-block;background:rgba(10,20,50,0.55);backdrop-filter:blur(4px);border-left:3px solid var(--gold);padding:12px 16px;border-radius:0 8px 8px 0; }
-.top-hero-text h2 { color:var(--white);font-size:clamp(16px,4vw,26px);font-weight:400;letter-spacing:0.12em;line-height:1.5;text-shadow:0 2px 8px rgba(0,0,0,0.8); }
-.top-hero-text p { color:var(--gold);font-size:clamp(11px,2.5vw,14px);letter-spacing:0.1em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.8); }
+.top-hero-text-inner { display:inline-block; }
+.top-hero-text h2 { color:var(--white);font-size:clamp(16px,4vw,26px);font-weight:400;letter-spacing:0.12em;line-height:1.5;
+  text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000,0 2px 8px rgba(0,0,0,0.9); }
+.top-hero-text p { color:var(--gold);font-size:clamp(11px,2.5vw,14px);letter-spacing:0.1em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif;
+  text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000,0 1px 6px rgba(0,0,0,0.9); }
 .top-content { background:var(--navy);padding:0 0 48px; }
 .top-section { max-width:720px;margin:0 auto;padding:32px 24px 0; }
 .section-title { color:var(--gold);font-size:13px;letter-spacing:0.18em;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:14px;display:flex;align-items:center;gap:10px; }
@@ -168,14 +170,14 @@ body {
 #page-photo { background:#000; }
 .photo-viewer { display:flex;flex-direction:column; }
 .viewer-topbar {
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px;flex-shrink:0;
+  display:flex;flex-direction:column;flex-shrink:0;
   background:rgba(10,15,30,0.95);border-bottom:1px solid rgba(201,168,76,0.15);
-  gap:8px;
 }
+.viewer-topbar-row1 { display:flex;align-items:center;padding:8px 16px 4px; }
+.viewer-topbar-row2 { display:flex;align-items:center;justify-content:center;padding:4px 16px 8px;gap:10px;flex-wrap:wrap; }
 .viewer-topbar-left { display:flex;align-items:center;gap:8px; }
-.viewer-topbar-center { display:flex;align-items:center;gap:12px; }
-.viewer-topbar-right { display:flex;align-items:center;gap:8px; }
+.viewer-topbar-center { display:flex;align-items:center;gap:10px; }
+.viewer-topbar-right { display:flex;align-items:center;gap:8px;margin-left:auto; }
 .viewer-pic-wrap {
   position:relative;
   width:100%;
@@ -383,23 +385,20 @@ body {
   <!-- ⑥ 写真拡大ページ -->
   <div id="page-photo" class="page">
     <div class="photo-viewer">
-      <!-- 上部ナビバー -->
+      <!-- 上部ナビバー（2段） -->
       <div class="viewer-topbar">
-        <div class="viewer-topbar-left">
+        <!-- 1段目：戻るボタン -->
+        <div class="viewer-topbar-row1">
           <button class="back-btn" style="margin-bottom:0" onclick="showPage('photos')">◀ 一覧へ戻る</button>
         </div>
-        <div class="viewer-topbar-center">
+        <!-- 2段目：ナビ・ズーム・ダウンロード -->
+        <div class="viewer-topbar-row2">
           <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
           <span class="viewer-counter" id="viewer-counter">- / -</span>
           <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
-          <div class="zoom-btns">
-            <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
-            <span class="zoom-level" id="zoom-level">100%</span>
-            <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
-          </div>
-        </div>
-        <div class="viewer-topbar-right">
-          <span class="viewer-filename" id="viewer-filename"></span>
+          <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
+          <span class="zoom-level" id="zoom-level">100%</span>
+          <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
           <a id="download-btn" class="dl-btn" download>↓ ダウンロード</a>
         </div>
       </div>
