@@ -181,33 +181,26 @@ body {
 .viewer-zoom-group { display:flex;align-items:center;gap:6px; }
 .viewer-file-group { display:flex;align-items:center;gap:10px;margin-left:auto; }
 .viewer-filename { color:rgba(248,247,244,0.7);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+/* PC共通 */
+.viewer-row1 { display:flex;align-items:center;gap:8px;flex-wrap:nowrap; }
+.viewer-row2 { display:none; }
+.vbtn { margin-bottom:0 !important;white-space:nowrap;flex-shrink:0; }
+.pc-only { display:inline-flex; }
+
 @media(max-width:600px) {
-  .viewer-topbar {
-    flex-direction:column;align-items:stretch;
-    padding:6px 10px;gap:0;
-  }
-  .viewer-topbar-row1 {
-    display:flex;align-items:center;
-    flex-wrap:nowrap;gap:6px;
-    padding-bottom:6px;
-  }
-  .viewer-topbar-row1 .back-btn {
-    font-size:11px;padding:5px 8px;
-    white-space:nowrap;flex-shrink:0;margin-bottom:0;
-  }
-  .viewer-nav-group { gap:4px;flex-shrink:0; }
-  .viewer-zoom-group { gap:4px;flex-shrink:0; }
-  .viewer-file-group {
-    display:flex !important;align-items:center;justify-content:space-between;
-    margin-left:0;padding-top:6px;
-    border-top:1px solid rgba(201,168,76,0.12);
-    width:100%;
-  }
-  .viewer-filename { font-size:12px;max-width:160px; }
+  .viewer-topbar { flex-direction:column;align-items:stretch;padding:6px 10px;gap:0; }
+  .viewer-row1 { gap:6px;padding-bottom:6px; }
+  .viewer-row1 .back-btn { font-size:11px;padding:5px 8px; }
   .nav-btn { width:32px;height:32px;font-size:16px; }
   .zoom-btn { width:28px;height:28px;font-size:14px; }
   .zoom-level { font-size:12px;min-width:36px; }
   .viewer-counter { font-size:12px;min-width:40px; }
+  .pc-only { display:none !important; }
+  .viewer-row2 {
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:6px;border-top:1px solid rgba(201,168,76,0.12);
+  }
+  .viewer-row2 .viewer-filename { font-size:12px;max-width:180px;color:rgba(248,247,244,0.7); }
 }
 .viewer-pic-wrap {
   position:relative;
@@ -420,22 +413,23 @@ body {
     <div class="photo-viewer">
       <!-- 上部ナビバー -->
       <div class="viewer-topbar">
-        <div class="viewer-topbar-row1">
-          <button class="back-btn" style="margin-bottom:0;white-space:nowrap" onclick="showPage('photos')">◀ 一覧へ戻る</button>
-          <div class="viewer-nav-group">
-            <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
-            <span class="viewer-counter" id="viewer-counter">- / -</span>
-            <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
-          </div>
-          <div class="viewer-zoom-group">
-            <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
-            <span class="zoom-level" id="zoom-level">100%</span>
-            <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
-          </div>
-          <div class="viewer-file-group">
-            <span class="viewer-filename" id="viewer-filename"></span>
-            <a id="download-btn" class="dl-btn" download>↓ ダウンロード</a>
-          </div>
+        <!-- 1段目：戻る・ナビ・ズーム（PCではファイル名・DLも同じ行） -->
+        <div class="viewer-row1">
+          <button class="back-btn vbtn" onclick="showPage('photos')">◀ 一覧へ戻る</button>
+          <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
+          <span class="viewer-counter" id="viewer-counter">- / -</span>
+          <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
+          <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
+          <span class="zoom-level" id="zoom-level">100%</span>
+          <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
+          <!-- PCのみここに表示 -->
+          <span class="viewer-filename pc-only" id="viewer-filename"></span>
+          <a id="download-btn" class="dl-btn pc-only" download>↓ ダウンロード</a>
+        </div>
+        <!-- 2段目：スマホのみ表示 -->
+        <div class="viewer-row2">
+          <span class="viewer-filename" id="viewer-filename-sp"></span>
+          <a id="download-btn-sp" class="dl-btn" download>↓ ダウンロード</a>
         </div>
       </div>
       <!-- 写真表示エリア -->
@@ -777,14 +771,14 @@ function updateViewer() {
   document.getElementById('nav-prev').disabled = (curPhotoIdx === 0);
   document.getElementById('nav-next').disabled = (curPhotoIdx === curPhotos.length - 1);
 
-  // ダウンロード：Google Driveの直接DLリンクを使用
+  // ダウンロード・ファイル名（PC用＋スマホ用）
+  var dlUrl = 'https://drive.google.com/uc?export=download&id=' + p.id;
   var dlBtn = document.getElementById('download-btn');
-  if (dlBtn) {
-    var dlUrl = 'https://drive.google.com/uc?export=download&id=' + p.id;
-    dlBtn.href = dlUrl;
-    dlBtn.target = '_blank';
-    dlBtn.removeAttribute('download');
-  }
+  if (dlBtn) { dlBtn.href = dlUrl; dlBtn.target = '_blank'; dlBtn.removeAttribute('download'); }
+  var dlBtnSp = document.getElementById('download-btn-sp');
+  if (dlBtnSp) { dlBtnSp.href = dlUrl; dlBtnSp.target = '_blank'; dlBtnSp.removeAttribute('download'); }
+  var fnSp = document.getElementById('viewer-filename-sp');
+  if (fnSp) fnSp.textContent = p.fname;
 }
 
 // ウィンドウリサイズ時も高さを再計算
