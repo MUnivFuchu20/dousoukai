@@ -212,6 +212,17 @@ body {
 .btn-submit:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
 .form-note { color:rgba(248,247,244,0.45);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-top:12px;text-align:center;line-height:1.8; }
 
+/* ===== 確認画面 ===== */
+.confirm-table { width:100%;border-collapse:collapse;margin-bottom:24px; }
+.confirm-table th { color:var(--gold);font-size:12px;letter-spacing:0.08em;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:10px 12px;width:120px;text-align:left;border-bottom:1px solid rgba(201,168,76,0.15);vertical-align:top; }
+.confirm-table td { color:rgba(248,247,244,0.85);font-size:14px;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:10px 12px;border-bottom:1px solid rgba(201,168,76,0.1);white-space:pre-wrap;word-break:break-all; }
+.confirm-btns { display:flex;gap:12px;margin-top:8px; }
+.btn-back-edit { flex:1;background:none;border:1px solid rgba(201,168,76,0.35);border-radius:10px;color:var(--gold);font-size:14px;letter-spacing:0.08em;padding:14px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.btn-back-edit:hover { background:rgba(201,168,76,0.08); }
+.btn-send { flex:2;background:linear-gradient(135deg,var(--aoi),var(--navy-mid));border:1px solid rgba(201,168,76,0.4);border-radius:10px;color:var(--white);font-size:15px;letter-spacing:0.12em;padding:14px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.btn-send:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
+.btn-send.busy { opacity:0.6;pointer-events:none; }
+
 /* フッター */
 #site-footer { background:var(--navy);border-top:1px solid rgba(201,168,76,0.18);padding:16px 24px;text-align:center;font-family:'Hiragino Sans','Meiryo',sans-serif; }
 #site-footer p { color:rgba(248,247,244,0.5);font-size:12px;line-height:1.8; }
@@ -425,8 +436,24 @@ body {
           <label><input type="radio" name="disclose" value="no"> 不可</label>
         </div>
       </div>
-      <button class="btn-submit" onclick="submitFeedback()">投稿する</button>
+      <button class="btn-submit" onclick="confirmFeedback()">内容確認</button>
       <p class="form-note" id="fb-result"></p>
+    </div>
+  </div>
+
+  <!-- ⑦' ご感想確認画面 -->
+  <div id="page-feedback-confirm" class="page">
+    <div class="feedback-page">
+      <button class="back-btn" onclick="showPage('feedback')">◀ 入力画面へ戻る</button>
+      <div class="page-title">内容確認</div>
+      <p style="color:rgba(248,247,244,0.6);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:20px;">以下の内容で送信します。よろしければ「送信する」を押してください。</p>
+      <table class="confirm-table" id="confirm-table">
+      </table>
+      <div class="confirm-btns">
+        <button class="btn-back-edit" onclick="showPage('feedback')">◀ 修正する</button>
+        <button class="btn-send" id="btn-send" onclick="doSendFeedback()">送信する</button>
+      </div>
+      <p class="form-note" id="confirm-result"></p>
     </div>
   </div>
 
@@ -476,7 +503,7 @@ function gasApi(action, params) {
 // ============================================================
 //  ページ管理
 // ============================================================
-var PAGE_IDS = ['login','top','song','kaisai','photos','photo','feedback'];
+var PAGE_IDS = ['login','top','song','kaisai','photos','photo','feedback','feedback-confirm'];
 function showPage(pageId) {
   PAGE_IDS.forEach(function(id) {
     var el = document.getElementById('page-' + id);
@@ -804,7 +831,9 @@ function fmtTime(s) {
 // ============================================================
 //  ご感想投稿
 // ============================================================
-function submitFeedback() {
+var feedbackData = {};
+
+function confirmFeedback() {
   var cls  = document.getElementById('fb-class').value;
   var name = document.getElementById('fb-name').value.trim();
   var msg  = document.getElementById('fb-message').value.trim();
@@ -815,31 +844,60 @@ function submitFeedback() {
     result.style.color = '#e07070';
     return;
   }
+  result.textContent = '';
 
   var disclose = document.querySelector('input[name="disclose"]:checked').value;
-  var data = {
+  feedbackData = {
     cls:      cls,
     name:     name,
-    email:    document.getElementById('fb-email').value,
-    phone:    document.getElementById('fb-phone').value,
+    email:    document.getElementById('fb-email').value.trim(),
+    phone:    document.getElementById('fb-phone').value.trim(),
     message:  msg,
     disclose: disclose
   };
 
-  result.textContent = '送信中...';
-  result.style.color = 'rgba(248,247,244,0.5)';
+  // 確認テーブルを生成
+  var rows = [
+    ['クラス', feedbackData.cls],
+    ['氏名', feedbackData.name],
+    ['メールアドレス', feedbackData.email || '（未入力）'],
+    ['電話番号', feedbackData.phone || '（未入力）'],
+    ['感想等', feedbackData.message],
+    ['同窓生への開示', feedbackData.disclose === 'yes' ? '可' : '不可']
+  ];
+  document.getElementById('confirm-table').innerHTML = rows.map(function(r) {
+    return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>';
+  }).join('');
+  document.getElementById('confirm-result').textContent = '';
 
-  gasApi('feedback', {data: JSON.stringify(data)}).then(function(res) {
+  showPage('feedback-confirm');
+}
+
+function doSendFeedback() {
+  var btnEl = document.getElementById('btn-send');
+  var result = document.getElementById('confirm-result');
+  btnEl.classList.add('busy');
+  btnEl.textContent = '送信中...';
+
+  gasApi('feedback', {data: JSON.stringify(feedbackData)}).then(function(res) {
+    btnEl.classList.remove('busy');
+    btnEl.textContent = '送信する';
     if (res.success) {
       result.textContent = '✓ 送信しました。ありがとうございます！';
       result.style.color = '#7abf7a';
+      // 入力フォームをリセット
+      document.getElementById('fb-class').value = '';
       document.getElementById('fb-name').value = '';
+      document.getElementById('fb-email').value = '';
+      document.getElementById('fb-phone').value = '';
       document.getElementById('fb-message').value = '';
     } else {
       result.textContent = '送信エラーが発生しました';
       result.style.color = '#e07070';
     }
   }).catch(function() {
+    btnEl.classList.remove('busy');
+    btnEl.textContent = '送信する';
     result.textContent = '送信エラーが発生しました';
     result.style.color = '#e07070';
   });
