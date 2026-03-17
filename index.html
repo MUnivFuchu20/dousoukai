@@ -170,28 +170,19 @@ body {
 #page-photo { background:#000; }
 .photo-viewer { display:flex;flex-direction:column;min-height:calc(100vh - 56px); }
 .viewer-topbar {
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;
   padding:8px 16px;flex-shrink:0;
   background:rgba(10,15,30,0.95);border-bottom:1px solid rgba(201,168,76,0.15);
-  gap:8px;flex-wrap:nowrap;
+  gap:8px;flex-wrap:wrap;
 }
 .viewer-topbar-row1 { display:contents; }
 .viewer-topbar-row2 { display:contents; }
-.viewer-topbar-left { display:flex;align-items:center;gap:8px;flex-shrink:0; }
-.viewer-topbar-center { display:flex;align-items:center;gap:8px;flex:1;justify-content:center; }
-.viewer-topbar-right { display:flex;align-items:center;gap:8px;flex-shrink:0; }
-@media(max-width:600px) {
-  .viewer-topbar { flex-direction:column;align-items:stretch;padding:6px 12px; }
-  .viewer-topbar-row1 { display:flex;padding-bottom:4px; }
-  .viewer-topbar-row2 { display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px solid rgba(201,168,76,0.1); }
-}
 .viewer-pic-wrap {
   position:relative;
-  width:100%;
-  flex:1;
+  width:100%;flex:1;
   overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  min-height:200px;
+  min-height:300px;
 }
 .viewer-bg {
   position:absolute;inset:0;
@@ -408,6 +399,7 @@ body {
           <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
           <span class="zoom-level" id="zoom-level">100%</span>
           <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
+          <span class="viewer-filename" id="viewer-filename"></span>
           <a id="download-btn" class="dl-btn" download>↓ ダウンロード</a>
         </div>
       </div>
