@@ -121,7 +121,7 @@ body {
 
 /* ===== 校歌ページ ===== */
 .song-page { max-width:800px;margin:0 auto;padding:32px 24px 48px; }
-.back-btn { display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(201,168,76,0.35);color:var(--gold);font-size:13px;letter-spacing:0.08em;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:'Hiragino Sans','Meiryo',sans-serif;transition:all 0.2s;margin-bottom:28px; }
+.back-btn { display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(201,168,76,0.35);color:var(--gold);font-size:13px;letter-spacing:0.08em;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:'Hiragino Sans','Meiryo',sans-serif;transition:all 0.2s;margin-bottom:28px;white-space:nowrap; }
 .back-btn:hover { background:rgba(201,168,76,0.08);border-color:var(--gold); }
 .song-header { text-align:center;margin-bottom:32px; }
 .song-header h2 { color:var(--white);font-size:22px;font-weight:400;letter-spacing:0.15em;margin-bottom:10px; }
@@ -182,18 +182,32 @@ body {
 .viewer-file-group { display:flex;align-items:center;gap:10px;margin-left:auto; }
 .viewer-filename { color:rgba(248,247,244,0.7);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 @media(max-width:600px) {
-  .viewer-topbar { flex-direction:column;align-items:stretch;padding:6px 10px;gap:0; }
-  .viewer-topbar-row1 { display:flex;align-items:center;flex-wrap:nowrap;gap:6px;padding-bottom:5px; }
-  .viewer-topbar-row1 .back-btn { font-size:11px;padding:5px 8px;white-space:nowrap;flex-shrink:0; }
-  .viewer-nav-group { display:flex;align-items:center;gap:4px;flex-shrink:0; }
-  .viewer-zoom-group { display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto; }
-  .viewer-file-group { display:flex;align-items:center;justify-content:space-between;
-    margin-left:0;padding-top:5px;border-top:1px solid rgba(201,168,76,0.12);width:100%; }
-  .viewer-filename { font-size:12px;max-width:180px; }
-  .viewer-counter { min-width:44px;font-size:12px; }
+  .viewer-topbar {
+    flex-direction:column;align-items:stretch;
+    padding:6px 10px;gap:0;
+  }
+  .viewer-topbar-row1 {
+    display:flex;align-items:center;
+    flex-wrap:nowrap;gap:6px;
+    padding-bottom:6px;
+  }
+  .viewer-topbar-row1 .back-btn {
+    font-size:11px;padding:5px 8px;
+    white-space:nowrap;flex-shrink:0;margin-bottom:0;
+  }
+  .viewer-nav-group { gap:4px;flex-shrink:0; }
+  .viewer-zoom-group { gap:4px;flex-shrink:0; }
+  .viewer-file-group {
+    display:flex !important;align-items:center;justify-content:space-between;
+    margin-left:0;padding-top:6px;
+    border-top:1px solid rgba(201,168,76,0.12);
+    width:100%;
+  }
+  .viewer-filename { font-size:12px;max-width:160px; }
   .nav-btn { width:32px;height:32px;font-size:16px; }
   .zoom-btn { width:28px;height:28px;font-size:14px; }
   .zoom-level { font-size:12px;min-width:36px; }
+  .viewer-counter { font-size:12px;min-width:40px; }
 }
 .viewer-pic-wrap {
   position:relative;
@@ -406,9 +420,8 @@ body {
     <div class="photo-viewer">
       <!-- 上部ナビバー -->
       <div class="viewer-topbar">
-        <!-- PC:1行 / スマホ:2行 -->
         <div class="viewer-topbar-row1">
-          <button class="back-btn" style="margin-bottom:0" onclick="showPage('photos')">◀ 一覧へ戻る</button>
+          <button class="back-btn" style="margin-bottom:0;white-space:nowrap" onclick="showPage('photos')">◀ 一覧へ戻る</button>
           <div class="viewer-nav-group">
             <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
             <span class="viewer-counter" id="viewer-counter">- / -</span>
