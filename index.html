@@ -90,9 +90,10 @@ body {
 .top-hero-bg { position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.75) saturate(1.0);transition:opacity 0.8s;opacity:0; }
 .top-hero-bg.show { opacity:1; }
 .top-hero-overlay { position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(26,39,68,0.3) 80%,var(--navy) 100%); }
-.top-hero-text { position:relative;z-index:2;padding:0 32px 28px;width:100%; }
-.top-hero-text h2 { color:var(--white);font-size:clamp(18px,4vw,26px);font-weight:400;letter-spacing:0.12em;line-height:1.5;text-shadow:0 2px 12px rgba(0,0,0,0.5); }
-.top-hero-text p { color:var(--gold);font-size:clamp(12px,2.5vw,14px);letter-spacing:0.1em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.5); }
+.top-hero-text { position:relative;z-index:2;padding:0 24px 24px;width:100%; }
+.top-hero-text-inner { display:inline-block;background:rgba(10,20,50,0.55);backdrop-filter:blur(4px);border-left:3px solid var(--gold);padding:12px 16px;border-radius:0 8px 8px 0; }
+.top-hero-text h2 { color:var(--white);font-size:clamp(16px,4vw,26px);font-weight:400;letter-spacing:0.12em;line-height:1.5;text-shadow:0 2px 8px rgba(0,0,0,0.8); }
+.top-hero-text p { color:var(--gold);font-size:clamp(11px,2.5vw,14px);letter-spacing:0.1em;margin-top:4px;font-family:'Hiragino Sans','Meiryo',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.8); }
 .top-content { background:var(--navy);padding:0 0 48px; }
 .top-section { max-width:720px;margin:0 auto;padding:32px 24px 0; }
 .section-title { color:var(--gold);font-size:13px;letter-spacing:0.18em;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:14px;display:flex;align-items:center;gap:10px; }
@@ -156,6 +157,12 @@ body {
 .photo-count { color:rgba(248,247,244,0.5);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:14px; }
 .sticky-back { position:sticky;top:56px;z-index:50;background:var(--navy);padding:10px 0 8px;margin-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.1); }
 .wait-spin { color:rgba(201,168,76,0.6);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:40px;text-align:center; }
+
+/* ===== 写真ズームボタン ===== */
+.zoom-btns { display:flex;align-items:center;gap:6px;flex-shrink:0; }
+.zoom-btn { background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:16px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:monospace; }
+.zoom-btn:hover { background:rgba(45,89,134,0.4);border-color:var(--gold); }
+.zoom-level { color:rgba(248,247,244,0.5);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif;min-width:32px;text-align:center; }
 
 /* ===== 写真拡大ビューア ===== */
 #page-photo { background:#000; }
@@ -277,8 +284,10 @@ body {
       <div class="top-hero-bg" id="hero-bg"></div>
       <div class="top-hero-overlay"></div>
       <div class="top-hero-text">
-        <h2>宮崎大学附属中学校<br>第20回卒　同窓会</h2>
-        <p>Miyazaki University Affiliated Junior High School — Alumni</p>
+        <div class="top-hero-text-inner">
+          <h2>宮崎大学附属中学校<br>第20回卒　同窓会</h2>
+          <p>Miyazaki University Affiliated Junior High School — Alumni</p>
+        </div>
       </div>
     </div>
     <div class="top-content">
@@ -383,6 +392,11 @@ body {
           <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
           <span class="viewer-counter" id="viewer-counter">- / -</span>
           <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
+          <div class="zoom-btns">
+            <button class="zoom-btn" onclick="zoomPhoto(-1)">－</button>
+            <span class="zoom-level" id="zoom-level">100%</span>
+            <button class="zoom-btn" onclick="zoomPhoto(1)">＋</button>
+          </div>
         </div>
         <div class="viewer-topbar-right">
           <span class="viewer-filename" id="viewer-filename"></span>
@@ -512,6 +526,13 @@ function showPage(pageId) {
   var target = document.getElementById('page-' + pageId);
   if (target) target.style.display = 'block';
   window.scrollTo(0, 0);
+  // 写真拡大画面ではページ全体のズームを無効化
+  var meta = document.querySelector('meta[name="viewport"]');
+  if (pageId === 'photo') {
+    meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+  } else {
+    meta.content = 'width=device-width, initial-scale=1';
+  }
 }
 
 // ============================================================
@@ -638,8 +659,8 @@ function initTopPage() {
   gasApi('config').then(function(res) {
     document.getElementById('footer-text').innerHTML =
       '宮崎大学附属中学校 第20回卒 同窓会<br>' +
-      'お問合せ：<a href="mailto:' + res.contact_email + '">' + res.contact_email + '</a>' +
-      '　電話：' + res.contact_phone;
+      'お問合せ：<a href="mailto:' + res.contact_email + '">' + res.contact_email + '</a><br>' +
+      '電話：' + res.contact_phone;
   });
 }
 
@@ -746,7 +767,29 @@ function viewerNav(dir) {
   var next = curPhotoIdx + dir;
   if (next < 0 || next >= curPhotos.length) return;
   curPhotoIdx = next;
+  curZoom = 1;
   updateViewer();
+}
+
+// ズーム機能
+var curZoom = 1;
+var zoomSteps = [0.5, 0.75, 1, 1.5, 2, 3];
+function zoomPhoto(dir) {
+  var idx = zoomSteps.indexOf(curZoom);
+  var newIdx = Math.max(0, Math.min(zoomSteps.length - 1, idx + dir));
+  curZoom = zoomSteps[newIdx];
+  var vp = document.getElementById('viewer-pic');
+  if (curZoom === 1) {
+    vp.style.transform = '';
+    vp.style.maxWidth = '100%';
+    vp.style.maxHeight = '100%';
+  } else {
+    vp.style.transform = 'scale(' + curZoom + ')';
+    vp.style.transformOrigin = 'center center';
+    vp.style.maxWidth = 'none';
+    vp.style.maxHeight = 'none';
+  }
+  document.getElementById('zoom-level').textContent = Math.round(curZoom * 100) + '%';
 }
 
 // ============================================================
