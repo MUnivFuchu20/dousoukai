@@ -290,7 +290,7 @@ body {
       <div class="login-card">
         <div class="login-crest">
           <div class="crest-icon">◈</div>
-          <h1>宮崎大学附属中学校<br>第20回卒 同窓会</h1>
+          <h1>宮崎大学附属中学校<br>第20回卒　同窓会</h1>
           <p>同窓生専用ページ</p>
         </div>
         <div class="login-divider"></div>
@@ -313,8 +313,8 @@ body {
       <div class="top-hero-overlay"></div>
       <div class="top-hero-text">
         <div class="top-hero-text-inner">
-          <h2>宮崎大学附属中学校<br>第20回卒 同窓会</h2>
-          <p>University of Miyazaki Junior High School - Class reunion</p>
+          <h2>宮崎大学附属中学校<br>第20回卒　同窓会</h2>
+          <p>Miyazaki University Affiliated Junior High School — Alumni</p>
         </div>
       </div>
     </div>
@@ -645,51 +645,60 @@ function doLogin() {
 }
 
 // ============================================================
-//  トップページ初期化
+//  トップページ初期化（並列API呼び出し）
 // ============================================================
 var topInitialized = false;
 function initTopPage() {
   if (topInitialized) return;
   topInitialized = true;
 
-  // ヘッダー背景画像
-  gasApi('headerImage').then(function(res) {
-    if (!res.url) return;
-    var bg = document.getElementById('hero-bg');
-    bg.style.backgroundImage = 'url(' + res.url + ')';
-    bg.classList.add('show');
-  });
+  Promise.all([
+    gasApi('headerImage'),
+    gasApi('topText'),
+    gasApi('kaisaiList'),
+    gasApi('nextKaisai'),
+    gasApi('config')
+  ]).then(function(results) {
+    var headerRes = results[0];
+    var topTextRes = results[1];
+    var kaisaiRes  = results[2];
+    var nextRes    = results[3];
+    var configRes  = results[4];
 
-  // 本HPについてテキスト
-  gasApi('topText').then(function(res) {
-    document.getElementById('about-text').textContent = res.text || '（未設定）';
-  });
+    // ヘッダー背景画像
+    if (headerRes.url) {
+      var bg = document.getElementById('hero-bg');
+      bg.style.backgroundImage = 'url(' + headerRes.url + ')';
+      bg.classList.add('show');
+    }
 
-  // 開催同窓会一覧
-  gasApi('kaisaiList').then(function(res) {
+    // 本HPについてテキスト
+    document.getElementById('about-text').textContent = topTextRes.text || '（未設定）';
+
+    // 開催同窓会一覧
     var c = document.getElementById('kaisai-list');
-    var list = res.list || [];
+    var list = kaisaiRes.list || [];
     if (list.length === 0) {
       c.innerHTML = '<div class="kaisai-empty">開催情報が登録されていません</div>';
-      return;
+    } else {
+      c.innerHTML = list.map(function(name) {
+        var esc = name.replace(/'/g, "\\'");
+        return '<button class="kaisai-btn" onclick="openKaisai(\'' + esc + '\')">'
+          + '<span>' + name + '</span><span class="btn-arrow">›</span></button>';
+      }).join('');
     }
-    c.innerHTML = list.map(function(name) {
-      var esc = name.replace(/'/g, "\\'");
-      return '<button class="kaisai-btn" onclick="openKaisai(\'' + esc + '\')">'        + '<span>' + name + '</span><span class="btn-arrow">›</span></button>';
-    }).join('');
-  });
 
-  // 次回同窓会のご案内
-  gasApi('nextKaisai').then(function(res) {
-    document.getElementById('next-kaisai-text').textContent = res.text || '次回同窓会開催は未定です。';
-  });
+    // 次回同窓会のご案内
+    document.getElementById('next-kaisai-text').textContent = nextRes.text || '次回同窓会開催は未定です。';
 
-  // フッター情報
-  gasApi('config').then(function(res) {
+    // フッター情報
     document.getElementById('footer-text').innerHTML =
       '宮崎大学附属中学校 第20回卒 同窓会<br>' +
-      'お問合せ：<a href="mailto:' + res.contact_email + '">' + res.contact_email + '</a><br>' +
-      '電話：' + res.contact_phone;
+      'お問合せ：<a href="mailto:' + configRes.contact_email + '">' + configRes.contact_email + '</a><br>' +
+      '電話：' + configRes.contact_phone;
+
+  }).catch(function() {
+    document.getElementById('about-text').textContent = '読み込みエラーが発生しました。再読み込みをお試しください。';
   });
 }
 
@@ -718,9 +727,11 @@ function openKaisai(folderName) {
 }
 
 // ============================================================
-//  写真一覧ページ
+//  写真一覧ページ（Lazy Load）
 // ============================================================
 var curPhotos = [];
+var photoObserver = null;
+
 function openPhotoFolder(folderName) {
   document.getElementById('photos-page-title').textContent = folderName;
   document.getElementById('photos-count').textContent = '';
@@ -734,11 +745,52 @@ function openPhotoFolder(folderName) {
       return;
     }
     document.getElementById('photos-count').textContent = curPhotos.length + '枚';
+
+    // Lazy Load: data-src属性に入れておき、見えたら src にセット
     grid.innerHTML = curPhotos.map(function(photo, idx) {
-      var st = 'background-image:url(' + photo.thumb + ');background-size:cover;background-position:center;width:100%;height:100%;border-radius:8px;';
-      return '<div class="photo-thumb" onclick="openPhoto(' + idx + ')">'
-        + '<div style="' + st + '"></div></div>';
+      return '<div class="photo-thumb" onclick="openPhoto(' + idx + ')" data-idx="' + idx + '">'
+        + '<div class="photo-thumb-inner" data-src="' + photo.thumb + '"></div></div>';
     }).join('');
+
+    // 既存のObserverを解除
+    if (photoObserver) { photoObserver.disconnect(); photoObserver = null; }
+
+    if ('IntersectionObserver' in window) {
+      photoObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          var el = entry.target;
+          var src = el.getAttribute('data-src');
+          if (src && !el.getAttribute('data-loaded')) {
+            el.style.backgroundImage = 'url(' + src + ')';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+            el.style.width = '100%';
+            el.style.height = '100%';
+            el.style.borderRadius = '8px';
+            el.setAttribute('data-loaded', '1');
+            photoObserver.unobserve(el);
+          }
+        });
+      }, {rootMargin: '100px'});
+
+      grid.querySelectorAll('.photo-thumb-inner').forEach(function(el) {
+        photoObserver.observe(el);
+      });
+    } else {
+      // IntersectionObserver非対応ブラウザはフォールバック
+      grid.querySelectorAll('.photo-thumb-inner').forEach(function(el) {
+        var src = el.getAttribute('data-src');
+        if (src) {
+          el.style.backgroundImage = 'url(' + src + ')';
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+          el.style.width = '100%';
+          el.style.height = '100%';
+          el.style.borderRadius = '8px';
+        }
+      });
+    }
   });
 }
 
@@ -878,10 +930,12 @@ function initPan() {
 }
 
 // ============================================================
-//  校歌プレイヤー
+//  校歌プレイヤー（localStorage キャッシュ付き）
 // ============================================================
 var songAudio = null;
 var songReady = false;
+var SONG_LS_KEY = 'dousoukai_song_v1';
+var SONG_VER_KEY = 'dousoukai_song_ver_v1';
 
 function initSongPage() {
   // 歌詞表示
@@ -893,42 +947,77 @@ function initSongPage() {
         + '<p>' + v.lines.join('<br>') + '</p></div>';
     }).join('');
   });
-  // MP3読み込み
+
+  // MP3読み込み（localStorageキャッシュ優先）
   if (songReady) return;
   songReady = true;
   document.getElementById('player-status').textContent = '取得中...';
-  gasApi('schoolSong').then(function(res) {
-    if (!res.data) {
-      document.getElementById('player-status').textContent = 'MP3なし';
-      return;
+
+  // キャッシュバージョン確認のため config から song_version を取得
+  gasApi('config').then(function(cfg) {
+    var serverVer = cfg.song_version || '1';
+    var cachedVer = localStorage.getItem(SONG_VER_KEY);
+    var cachedData = null;
+    try { cachedData = localStorage.getItem(SONG_LS_KEY); } catch(e) {}
+
+    if (cachedData && cachedVer === serverVer) {
+      // キャッシュ利用（即座に再生可能）
+      document.getElementById('player-status').textContent = 'キャッシュから読み込み済み — ▶ を押して再生';
+      setupAudio(cachedData);
+    } else {
+      // GASから取得してキャッシュ保存
+      gasApi('schoolSong').then(function(res) {
+        if (!res.data) {
+          document.getElementById('player-status').textContent = 'MP3なし';
+          return;
+        }
+        try {
+          localStorage.setItem(SONG_LS_KEY, res.data);
+          localStorage.setItem(SONG_VER_KEY, serverVer);
+        } catch(e) {
+          // localStorage 容量超過などはサイレント無視
+        }
+        setupAudio(res.data);
+      }).catch(function() {
+        document.getElementById('player-status').textContent = '取得エラー';
+      });
     }
-    songAudio = new Audio();
-    songAudio.addEventListener('canplaythrough', function() {
-      document.getElementById('player-time').textContent = '0:00 / ' + fmtTime(songAudio.duration);
-      document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
-    });
-    songAudio.addEventListener('canplay', function() {
-      document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
-    });
-    songAudio.addEventListener('timeupdate', function() {
-      if (!songAudio.duration) return;
-      document.getElementById('progress-bar').style.width = (songAudio.currentTime / songAudio.duration * 100) + '%';
-      document.getElementById('player-time').textContent = fmtTime(songAudio.currentTime) + ' / ' + fmtTime(songAudio.duration);
-    });
-    songAudio.addEventListener('ended', function() {
-      document.getElementById('play-icon').textContent = '▶';
-      document.getElementById('progress-bar').style.width = '0%';
-      document.getElementById('player-status').textContent = '再生終了';
-    });
-    songAudio.addEventListener('error', function() {
-      document.getElementById('player-status').textContent = '再生エラー';
-    });
-    songAudio.src = res.data;
-    document.getElementById('player-status').textContent =
-      res.data.startsWith('data:') ? '読み込み中...' : '準備完了 — ▶ を押して再生';
   }).catch(function() {
-    document.getElementById('player-status').textContent = '取得エラー';
+    // configが取れなくてもGASから直接取得
+    gasApi('schoolSong').then(function(res) {
+      if (!res.data) { document.getElementById('player-status').textContent = 'MP3なし'; return; }
+      setupAudio(res.data);
+    }).catch(function() {
+      document.getElementById('player-status').textContent = '取得エラー';
+    });
   });
+}
+
+function setupAudio(src) {
+  songAudio = new Audio();
+  songAudio.addEventListener('canplaythrough', function() {
+    document.getElementById('player-time').textContent = '0:00 / ' + fmtTime(songAudio.duration);
+    document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
+  });
+  songAudio.addEventListener('canplay', function() {
+    document.getElementById('player-status').textContent = '準備完了 — ▶ を押して再生';
+  });
+  songAudio.addEventListener('timeupdate', function() {
+    if (!songAudio.duration) return;
+    document.getElementById('progress-bar').style.width = (songAudio.currentTime / songAudio.duration * 100) + '%';
+    document.getElementById('player-time').textContent = fmtTime(songAudio.currentTime) + ' / ' + fmtTime(songAudio.duration);
+  });
+  songAudio.addEventListener('ended', function() {
+    document.getElementById('play-icon').textContent = '▶';
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('player-status').textContent = '再生終了';
+  });
+  songAudio.addEventListener('error', function() {
+    document.getElementById('player-status').textContent = '再生エラー';
+  });
+  songAudio.src = src;
+  document.getElementById('player-status').textContent =
+    src.startsWith('data:') ? '読み込み中...' : '準備完了 — ▶ を押して再生';
 }
 
 function togglePlay() {
