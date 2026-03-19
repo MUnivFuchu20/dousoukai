@@ -126,7 +126,10 @@ body {
 .song-header { text-align:center;margin-bottom:32px; }
 .song-header h2 { color:var(--white);font-size:22px;font-weight:400;letter-spacing:0.15em;margin-bottom:10px; }
 .song-credits { color:rgba(248,247,244,0.55);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;letter-spacing:0.08em;line-height:2; }
-.music-player { background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:16px;padding:24px 28px;margin-bottom:36px; }
+.music-player { background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:16px;padding:16px 24px;margin-bottom:16px; }
+.song-content { color:rgba(248,247,244,0.45);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;line-height:1.8;margin-bottom:28px; }
+.song-content a { color:rgba(201,168,76,0.6);text-decoration:none; }
+.song-content a:hover { color:var(--gold); }
 .player-controls { display:flex;align-items:center;gap:16px;margin-bottom:14px; }
 .play-btn { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--aoi),var(--navy-mid));border:1px solid rgba(201,168,76,0.4);color:var(--gold);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;flex-shrink:0; }
 .play-btn:hover { background:linear-gradient(135deg,var(--aoi-light),var(--aoi));border-color:var(--gold); }
@@ -378,6 +381,7 @@ body {
         </div>
         <div class="player-status" id="player-status">読み込み中...</div>
       </div>
+      <div class="song-content" id="song-content"></div>
       <div class="lyrics-grid" id="lyrics-grid"></div>
     </div>
   </div>
@@ -909,6 +913,20 @@ const initSongPage = () => {
       `${cfg.song_lyricist || ''}<br>${cfg.song_composer || ''}`;
     document.getElementById('song-player-title').textContent = cfg.song_title || '校　歌';
 
+    // 許諾・出典コメントをconfig.iniから反映
+    const contentEl = document.getElementById('song-content');
+    if (contentEl) {
+      const text = cfg.song_content    || '';
+      const url  = cfg.song_contentURL || '';
+      if (text || url) {
+        contentEl.innerHTML =
+          (text ? `<span>${text}</span>` : '') +
+          (url  ? `<br><a href="${url}" target="_blank" rel="noopener">${url}</a>` : '');
+      } else {
+        contentEl.style.display = 'none';
+      }
+    }
+
     // 歌詞表示
     const g = document.getElementById('lyrics-grid');
     if (g && lyricsRes.lyrics) {
@@ -937,7 +955,11 @@ const initSongPage = () => {
       setupAudio(cachedData);
     } else {
       gasApi('schoolSong').then(res => {
-        if (!res.data) { document.getElementById('player-status').textContent = 'MP3なし'; return; }
+        if (!res.data) {
+          const fname = res.errorFile || 'schoolSong.b64';
+          document.getElementById('player-status').textContent = `音楽ファイル：${fname} なし`;
+          return;
+        }
         try {
           localStorage.setItem(SONG_LS_KEY,  res.data);
           localStorage.setItem(SONG_VER_KEY, serverVer);
@@ -947,7 +969,11 @@ const initSongPage = () => {
     }
   }).catch(() => {
     gasApi('schoolSong').then(res => {
-      if (!res.data) { document.getElementById('player-status').textContent = 'MP3なし'; return; }
+      if (!res.data) {
+        const fname = res.errorFile || 'schoolSong.b64';
+        document.getElementById('player-status').textContent = `音楽ファイル：${fname} なし`;
+        return;
+      }
       setupAudio(res.data);
     }).catch(() => { document.getElementById('player-status').textContent = '取得エラー'; });
   });
