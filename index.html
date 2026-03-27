@@ -26,6 +26,7 @@
   --gold:      #c9a84c;
   --white:     #f8f7f4;
   =================================== */
+
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -167,6 +168,28 @@ body {
 .album-btn { display:flex;align-items:center;justify-content:space-between;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.4);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all 0.2s;color:var(--gold);font-size:14px;letter-spacing:0.06em;text-align:left;width:100%;font-family:'Hiragino Sans','Meiryo',sans-serif; }
 .album-btn:hover { background:rgba(201,168,76,0.16);border-color:var(--gold);transform:translateX(3px); }
 .album-btn .btn-arrow { color:var(--gold);font-size:16px;flex-shrink:0;margin-left:12px; }
+.post-card { background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px; }
+.post-header { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+.post-class { color:var(--gold);font-size:12px;font-family:'Hiragino Sans','Meiryo',sans-serif;letter-spacing:0.06em; }
+.post-name { color:var(--white);font-size:14px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.post-date { color:rgba(248,247,244,0.35);font-size:11px;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-left:auto; }
+.post-comment { color:rgba(248,247,244,0.82);font-size:14px;line-height:1.8;font-family:'Hiragino Sans','Meiryo',sans-serif;margin-bottom:12px;white-space:pre-wrap; }
+.post-photos { display:flex;flex-wrap:wrap;gap:8px; }
+.post-photo { width:120px;height:90px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid rgba(201,168,76,0.15);transition:all 0.2s; }
+.post-photo:hover { border-color:var(--gold);transform:scale(1.03); }
+.post-btn { display:block;width:100%;background:none;border:1px solid rgba(201,168,76,0.35);border-radius:var(--radius);color:var(--gold);font-size:14px;letter-spacing:0.12em;padding:16px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif;text-align:center; }
+.post-btn:hover { background:rgba(201,168,76,0.08);border-color:var(--gold); }
+.post-empty { color:rgba(248,247,244,0.4);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;padding:20px 0;text-align:center; }
+.post-overlay { display:none;position:fixed;inset:0;z-index:1000;background:#000;flex-direction:column; }
+.post-overlay.show { display:flex; }
+.post-overlay-bar { display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,0.85);flex-shrink:0; }
+.post-overlay-bar button { background:rgba(255,255,255,0.1);border:1px solid rgba(201,168,76,0.4);color:var(--gold);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.post-overlay-bar button:hover { background:rgba(201,168,76,0.2); }
+.post-overlay-counter { color:var(--gold);font-size:13px;min-width:50px;text-align:center; }
+.post-overlay-close { margin-left:auto; }
+.post-overlay-img { flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden; }
+.post-overlay-img img { max-width:100%;max-height:100%;object-fit:contain;transition:transform 0.2s;transform-origin:center center; }
+.post-overlay-zoom { color:var(--gold);font-size:13px;min-width:36px;text-align:center; }
 .pdf-folder-btn { display:flex;align-items:center;justify-content:space-between;background:rgba(180,100,50,0.08);border:1px solid rgba(180,100,50,0.35);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all 0.2s;color:#e8a878;font-size:14px;letter-spacing:0.06em;text-align:left;width:100%;font-family:'Hiragino Sans','Meiryo',sans-serif; }
 .pdf-folder-btn:hover { background:rgba(180,100,50,0.18);border-color:#e8a878;transform:translateX(3px); }
 .pdf-folder-btn .btn-arrow { color:#e8a878;font-size:16px;flex-shrink:0;margin-left:12px; }
@@ -374,6 +397,14 @@ body {
       </div>
       <div class="section-divider"></div>
       <div class="top-section">
+        <div class="section-title">同窓生投稿</div>
+        <button class="post-btn" onclick="showPage('posts')">📷 投稿写真を見る</button>
+        <div style="height:10px;"></div>
+        <p style="color:rgba(248,247,244,0.6);font-size:13px;font-family:'Hiragino Sans','Meiryo',sans-serif;line-height:1.8;margin-bottom:8px;">「写真を投稿する」ボタンをクリックすると、Googleフォームが開きます。必要事項を記入の上、写真を投稿してください。<br>※ GmailやGoogleカレンダーなどを使用していない場合、Googleアカウントでのログインが必要です。</p>
+        <button class="post-btn" id="btn-open-form" onclick="openPostForm()" style="margin-top:0;">✏️ 写真を投稿する</button>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
         <div class="section-title">ご感想等</div>
         <button class="feedback-btn" onclick="showPage('feedback')">✉ ご感想投稿</button>
       </div>
@@ -452,7 +483,7 @@ body {
       <div class="viewer-topbar">
         <!-- 1段目：戻る・ナビ・ズーム（PCではファイル名・DLも同じ行） -->
         <div class="viewer-row1">
-          <button class="back-btn vbtn" onclick="showPage('photos')">◀ 一覧へ戻る</button>
+          <button class="back-btn vbtn" id="viewer-back-btn" onclick="viewerBack()">◀ 一覧へ戻る</button>
           <button class="nav-btn" id="nav-prev" onclick="viewerNav(-1)">‹</button>
           <span class="viewer-counter" id="viewer-counter">- / -</span>
           <button class="nav-btn" id="nav-next" onclick="viewerNav(1)">›</button>
@@ -477,6 +508,33 @@ body {
     </div>
   </div>
 
+  <!-- ⑧ 同窓生投稿閲覧ページ -->
+  <div id="page-posts" class="page">
+    <div class="sub-page">
+      <div class="sticky-back">
+        <button class="back-btn" onclick="showPage('top')">◀ トップ画面へ戻る</button>
+      </div>
+      <div class="page-title">同窓生投稿</div>
+      <div id="posts-list"><div class="wait-spin">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- 投稿写真オーバーレイビューア -->
+  <div id="post-overlay" class="post-overlay">
+    <div class="post-overlay-bar">
+      <button onclick="postOverlayNav(-1)">‹</button>
+      <span class="post-overlay-counter" id="post-overlay-counter">1/1</span>
+      <button onclick="postOverlayNav(1)">›</button>
+      <button onclick="postOverlayZoom(-1)">－</button>
+      <span class="post-overlay-zoom" id="post-overlay-zoom">100%</span>
+      <button onclick="postOverlayZoom(1)">＋</button>
+      <button class="post-overlay-close" onclick="closePostOverlay()">✕ 閉じる</button>
+    </div>
+    <div class="post-overlay-img">
+      <img id="post-overlay-img" src="" alt="投稿写真">
+    </div>
+  </div>
+
   <!-- ⑦ ご感想投稿ページ -->
   <div id="page-feedback" class="page">
     <div class="feedback-page">
@@ -485,12 +543,12 @@ body {
       <div class="form-group">
         <label>クラス <span>*</span></label>
         <select id="fb-class" style="color:#f8f7f4;background:#243258;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;width:100%;font-size:14px;font-family:'Hiragino Sans','Meiryo',sans-serif;">
-          <option value="" style="color:#f8f7f4;background:#243258;">選択してください</option>
-          <option value="A" style="color:#f8f7f4;background:#243258;">A級</option>
-          <option value="B" style="color:#f8f7f4;background:#243258;">B級</option>
-          <option value="C" style="color:#f8f7f4;background:#243258;">C級</option>
-          <option value="D" style="color:#f8f7f4;background:#243258;">D級</option>
-          <option value="失念した" style="color:#f8f7f4;background:#243258;">失念した</option>
+          <option value="" style="color:#f8f7f4;background:#1f4d32;">選択してください</option>
+          <option value="A級" style="color:#f8f7f4;background:#1f4d32;">A級</option>
+          <option value="B級" style="color:#f8f7f4;background:#1f4d32;">B級</option>
+          <option value="C級" style="color:#f8f7f4;background:#1f4d32;">C級</option>
+          <option value="D級" style="color:#f8f7f4;background:#1f4d32;">D級</option>
+          <option value="失念した" style="color:#f8f7f4;background:#1f4d32;">失念した</option>
         </select>
       </div>
       <div class="form-group">
@@ -581,7 +639,7 @@ const gasApi = (action, params = {}) => new Promise((resolve, reject) => {
 // ============================================================
 //  ページ管理
 // ============================================================
-const PAGE_IDS = ['login','top','song','kaisai','photos','pdfs','photo','feedback','feedback-confirm'];
+const PAGE_IDS = ['login','top','song','kaisai','photos','pdfs','photo','posts','feedback','feedback-confirm'];
 const showPage = (pageId) => {
   PAGE_IDS.forEach(id => {
     const el = document.getElementById(`page-${id}`);
@@ -594,6 +652,7 @@ const showPage = (pageId) => {
   meta.content = pageId === 'photo'
     ? 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
     : 'width=device-width, initial-scale=1';
+  if (pageId === 'posts') initPostsPage();
 };
 
 // ============================================================
@@ -731,6 +790,9 @@ const initTopPage = () => {
 
     // 次回同窓会のご案内
     document.getElementById('next-kaisai-text').textContent = nextRes.text || '次回同窓会開催は未定です。';
+
+    // 投稿フォームURLをキャッシュ
+    POST_FORM_URL = cfg.post_form_url || '';
 
     // フッター（config.iniのfooter_copy・contact情報を使用）
     const footerCopy = cfg.footer_copy || siteTitle;
@@ -886,9 +948,16 @@ const openPhotoFolder = (folderName) => {
 // ============================================================
 //  写真拡大ビューア
 // ============================================================
-let curPhotoIdx = 0;
+let curPhotoIdx    = 0;
+let viewerFromPost = false;
+
+const viewerBack = () => {
+  showPage(viewerFromPost ? 'posts' : 'photos');
+};
+
 const openPhoto = (idx) => {
-  curPhotoIdx = idx;
+  viewerFromPost = false;
+  curPhotoIdx    = idx;
   showPage('photo');
   resetZoom();
   updateViewer();
@@ -1139,6 +1208,142 @@ const fmtTime = (s) => {
   const m = Math.floor(s / 60), r = Math.floor(s % 60);
   return `${m}:${r < 10 ? '0' : ''}${r}`;
 };
+
+// ============================================================
+//  同窓生投稿
+// ============================================================
+let POST_FORM_URL = '';
+
+const openPostForm = () => {
+  if (POST_FORM_URL) {
+    window.open(POST_FORM_URL, '_blank', 'noopener');
+  } else {
+    gasApi('config').then(cfg => {
+      POST_FORM_URL = cfg.post_form_url || '';
+      if (POST_FORM_URL) {
+        window.open(POST_FORM_URL, '_blank', 'noopener');
+      } else {
+        alert('投稿フォームのURLが設定されていません');
+      }
+    });
+  }
+};
+
+// 投稿写真一覧（Lazy Load + 別ウィンドウ拡大）
+const initPostsPage = () => {
+  const list = document.getElementById('posts-list');
+  list.innerHTML = '<div class="wait-spin">読み込み中...</div>';
+  gasApi('postList').then(res => {
+    const posts = res.posts || [];
+    if (posts.length === 0) {
+      list.innerHTML = '<div class="post-empty">まだ投稿がありません</div>';
+      return;
+    }
+
+    // 投稿単位の写真配列を保持
+    window._postPhotosMap = posts.map(post =>
+      (post.photos || []).map(p => ({
+        full:  p.full  || p.thumb || p,
+        thumb: p.thumb || p
+      }))
+    );
+
+    // Lazy Load：data-src属性でサムネイルを遅延読み込み
+    list.innerHTML = posts.map((post, postIdx) => {
+      const photos = (window._postPhotosMap[postIdx] || []).map((p, photoIdx) =>
+        `<img class="post-photo" data-src="${p.thumb}" alt="投稿写真"
+          onclick="openPostPhoto(${postIdx}, ${photoIdx})">`
+      ).join('');
+      return `<div class="post-card">
+        <div class="post-header">
+          <span class="post-class">${post.cls}</span>
+          <span class="post-name">${post.name}</span>
+          <span class="post-date">${post.date}</span>
+        </div>
+        <div class="post-comment">${post.comment}</div>
+        ${photos ? `<div class="post-photos">${photos}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    // IntersectionObserverでLazy Load
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const img = entry.target;
+          const src = img.getAttribute('data-src');
+          if (src) { img.src = src; img.removeAttribute('data-src'); }
+          obs.unobserve(img);
+        });
+      }, { rootMargin: '100px' });
+      list.querySelectorAll('img[data-src]').forEach(img => obs.observe(img));
+    } else {
+      list.querySelectorAll('img[data-src]').forEach(img => {
+        img.src = img.getAttribute('data-src');
+        img.removeAttribute('data-src');
+      });
+    }
+  }).catch(() => {
+    list.innerHTML = '<div class="post-empty">読み込みエラーが発生しました</div>';
+  });
+};
+
+// オーバーレイビューア用状態
+let _overlayPhotos = [];
+let _overlayIdx    = 0;
+
+const openPostPhoto = (postIdx, photoIdx) => {
+  _overlayPhotos = window._postPhotosMap[postIdx] || [];
+  if (!_overlayPhotos.length) return;
+  _overlayIdx = photoIdx;
+  updatePostOverlay();
+  document.getElementById('post-overlay').classList.add('show');
+};
+
+const updatePostOverlay = () => {
+  const p = _overlayPhotos[_overlayIdx];
+  document.getElementById('post-overlay-img').src = p.full || p.thumb;
+  document.getElementById('post-overlay-counter').textContent =
+    `${_overlayIdx + 1}/${_overlayPhotos.length}`;
+  // 写真切り替え時にズームリセット
+  _overlayZoom = 1;
+  document.getElementById('post-overlay-img').style.transform = '';
+  document.getElementById('post-overlay-zoom').textContent = '100%';
+  // ナビボタンの活性制御
+  const btns = document.querySelectorAll('.post-overlay-bar button');
+  btns[0].style.opacity = _overlayIdx === 0 ? '0.3' : '1';
+  btns[1].style.opacity = _overlayIdx === _overlayPhotos.length - 1 ? '0.3' : '1';
+};
+
+const postOverlayNav = (dir) => {
+  const next = _overlayIdx + dir;
+  if (next < 0 || next >= _overlayPhotos.length) return;
+  _overlayIdx = next;
+  updatePostOverlay();
+};
+
+const closePostOverlay = () => {
+  document.getElementById('post-overlay').classList.remove('show');
+  document.getElementById('post-overlay-img').src = '';
+  _overlayZoom = 1;
+  document.getElementById('post-overlay-img').style.transform = '';
+  document.getElementById('post-overlay-zoom').textContent = '100%';
+};
+
+// オーバーレイズーム
+let _overlayZoom = 1;
+const _overlayZoomSteps = [0.5, 0.75, 1, 1.5, 2, 3];
+const postOverlayZoom = (dir) => {
+  const idx    = _overlayZoomSteps.indexOf(_overlayZoom);
+  const newIdx = Math.max(0, Math.min(_overlayZoomSteps.length - 1, idx + dir));
+  _overlayZoom = _overlayZoomSteps[newIdx];
+  document.getElementById('post-overlay-img').style.transform =
+    _overlayZoom === 1 ? '' : `scale(${_overlayZoom})`;
+  document.getElementById('post-overlay-zoom').textContent =
+    `${Math.round(_overlayZoom * 100)}%`;
+};
+
+
 
 // ============================================================
 //  ご感想投稿
