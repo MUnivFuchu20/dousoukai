@@ -2,9 +2,9 @@
 <!--
   ============================================================
   同窓会ホームページ index.html
-  対象：宮崎県立大宮高等学校 四六会
-  最終更新：2026/04/09 00:07:24
-  更新内容：XSS対策（escHtml）追加
+  対象：宮崎大学附属中学校 第20回卒 同窓会
+  最終更新：2026/07/24 05:57:00
+  更新内容：新着情報セクション追加
   ============================================================
 -->
 <html lang="ja">
@@ -136,6 +136,11 @@ body {
 .feedback-btn { display:block;width:100%;background:none;border:1px solid rgba(201,168,76,0.35);border-radius:var(--radius);color:var(--gold);font-size:14px;letter-spacing:0.12em;padding:16px;cursor:pointer;transition:all 0.2s;font-family:'Hiragino Sans','Meiryo',sans-serif;text-align:center; }
 .feedback-btn:hover { background:rgba(201,168,76,0.08);border-color:var(--gold); }
 .section-divider { height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,0.15),transparent);margin:32px auto 0;max-width:720px; }
+.sinchaku-box { background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:var(--radius);padding:12px 16px;max-height:120px;overflow-y:auto;font-family:'Hiragino Sans','Meiryo',sans-serif; }
+.sinchaku-item { display:flex;gap:12px;padding:4px 0;border-bottom:1px solid rgba(201,168,76,0.08);font-size:13px;line-height:1.6; }
+.sinchaku-item:last-child { border-bottom:none; }
+.sinchaku-date { color:var(--gold);flex-shrink:0;font-size:12px;padding-top:1px;min-width:80px;display:inline-block; }
+.sinchaku-text { color:rgba(248,247,244,0.82); }
 
 /* ===== 校歌ページ ===== */
 .song-page { max-width:800px;margin:0 auto;padding:32px 24px 48px; }
@@ -378,6 +383,11 @@ body {
       <div class="top-section">
         <div class="section-title">本ホームページについて</div>
         <div class="top-about-text" id="about-text">読み込み中...</div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="top-section">
+        <div class="section-title">新着情報</div>
+        <div class="sinchaku-box" id="sinchaku-box"><div class="kaisai-empty">読み込み中...</div></div>
       </div>
       <div class="section-divider"></div>
       <div class="top-section">
@@ -762,8 +772,9 @@ const initTopPage = () => {
     gasApi('topText'),
     gasApi('kaisaiList'),
     gasApi('nextKaisai'),
-    gasApi('config')
-  ]).then(([headerRes, topTextRes, kaisaiRes, nextRes, cfg]) => {
+    gasApi('config'),
+    gasApi('sinchaku')
+  ]).then(([headerRes, topTextRes, kaisaiRes, nextRes, cfg, sinchakuRes]) => {
 
     // ヘッダー背景画像（config.iniのschool_pictureを使用）
     if (headerRes.url) {
@@ -784,6 +795,39 @@ const initTopPage = () => {
 
     // 本HPについてテキスト
     document.getElementById('about-text').textContent = topTextRes.text || '（未設定）';
+
+    // 新着情報（sinchaku.txt）
+    // 書式：日付[TAB]内容（1行1件）最新2件を折り畳み表示、全件スクロール可能
+    // 同日付複数行はタブ2つ（日付なし）で始める
+    const sinchakuBox  = document.getElementById('sinchaku-box');
+    const sinchakuRaw  = (sinchakuRes && sinchakuRes.text) ? sinchakuRes.text : '';
+    const sinchakuItems = sinchakuRaw
+      .split('\n')
+      .map(l => l.trimEnd())
+      .filter(l => l.trim() && !l.trim().startsWith(';'))
+      .map(l => {
+        const tab = l.indexOf('\t');
+        if (tab === 0) {
+          // タブ始まり＝同日付の続き行（日付なし）
+          return { date: '', text: escHtml(l.replace(/^\t+/, '').trim()) };
+        }
+        return tab >= 0
+          ? { date: l.substring(0, tab).trim(), text: escHtml(l.substring(tab + 1).trim()) }
+          : { date: '', text: escHtml(l.trim()) };
+      });
+    if (sinchakuItems.length === 0) {
+      sinchakuBox.innerHTML = '<div class="kaisai-empty">新着情報はありません</div>';
+    } else {
+      let lastDate = '';
+      sinchakuBox.innerHTML = sinchakuItems.map((item, i) => {
+        const showDate = item.date && item.date !== lastDate;
+        if (item.date) lastDate = item.date;
+        return `<div class="sinchaku-item">
+          <span class="sinchaku-date">${showDate ? escHtml(item.date) : ''}</span>
+          <span class="sinchaku-text">${item.text}</span>
+        </div>`;
+      }).join('');
+    }
 
     // 開催同窓会一覧
     const c    = document.getElementById('kaisai-list');
