@@ -462,6 +462,60 @@ body {
   #site-footer p { color: #666666 !important; }
   #site-footer a { color: #664400 !important; }
 
+  /* ============================================================
+     rgba直接指定の白系文字色を黒系に上書き
+     CSS変数経由でない色指定はこちらで個別対応
+     ============================================================ */
+
+  /* ホームページ本文・説明テキスト */
+  .top-about-text      { color: #222222 !important; }
+  .next-kaisai-box p   { color: #333333 !important; }
+  .next-kaisai-box     { background: #f0f0f0 !important; border-color: #cccccc !important; }
+
+  /* 新着情報 */
+  .sinchaku-text       { color: #222222 !important; }
+
+  /* 校歌 */
+  .song-credits        { color: #555555 !important; }
+  .song-content        { color: #555555 !important; }
+  .song-sub            { color: #666666 !important; }
+  .lyrics-block p      { color: #222222 !important; }
+  .player-time         { color: #666666 !important; }
+  .player-status       { color: #666666 !important; }
+
+  /* 実行委員長挨拶 */
+  .greeting-box p      { color: #222222 !important; }
+
+  /* 開催一覧 */
+  .kaisai-empty        { color: #666666 !important; }
+
+  /* 同窓生投稿 */
+  .post-comment        { color: #222222 !important; }
+  .post-date           { color: #888888 !important; }
+  .post-empty          { color: #666666 !important; }
+
+  /* PDFリスト */
+  .pdf-item            { color: #222222 !important; background: #f8f8f8 !important; border-color: #cccccc !important; }
+  .photo-count         { color: #666666 !important; }
+
+  /* ビューア */
+  .viewer-filename     { color: #555555 !important; }
+  .viewer-counter      { color: #555555 !important; }
+  .zoom-level          { color: #666666 !important; }
+
+  /* ご感想フォーム */
+  .disclose-row label  { color: #333333 !important; }
+  .form-note           { color: #666666 !important; }
+  .confirm-table td    { color: #222222 !important; }
+
+  /* インラインstyleで指定された白系文字も強制上書き */
+  /* （style属性は !important でも上書き可能） */
+  [style*="rgba(248,247,244"] { color: #333333 !important; }
+  [style*="rgba(201,168,76"]  { color: #664400 !important; }
+
+  /* ログインカード（印刷対象外だが念のため） */
+  .login-note          { color: #555555 !important; }
+
   /* 装飾・アニメーション除去 */
   * {
     animation: none !important;
